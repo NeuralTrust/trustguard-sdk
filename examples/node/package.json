@@ -1,0 +1,8 @@
+{
+  "name": "trustguard-sdk-examples",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@neuraltrust/trustguard-sdk": "file:../../node"
+  }
+}

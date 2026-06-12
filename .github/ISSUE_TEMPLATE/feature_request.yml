@@ -1,0 +1,28 @@
+name: Feature request
+description: Suggest an improvement to one or more SDKs
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: sdk
+    attributes:
+      label: SDK(s) affected
+      multiple: true
+      options:
+        - Node.js (@neuraltrust/trustguard-sdk)
+        - Python (neuraltrust-trustguard)
+        - Go (github.com/NeuralTrust/trustguard-sdk/go)
+        - All / repo-wide
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do that the SDK makes hard or impossible today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Sketch the API you would like to see. Remember the SDKs stay thin clients for POST /v1/guard.

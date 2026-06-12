@@ -1,0 +1,47 @@
+name: Bug report
+description: Something in one of the SDKs is broken
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: sdk
+    attributes:
+      label: SDK
+      options:
+        - Node.js (@neuraltrust/trustguard-sdk)
+        - Python (neuraltrust-trustguard)
+        - Go (github.com/NeuralTrust/trustguard-sdk/go)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: SDK version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime version
+      placeholder: "Node 22.1 / Python 3.12 / Go 1.22"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Smallest snippet that reproduces the problem. Redact your API key and base URL.
+      render: shell
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error output
+      description: Include trace_id and request_id from the error when available.
+      render: shell

@@ -1,0 +1,23 @@
+# Node
+node_modules/
+node/dist/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+python/dist/
+python/build/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Go
+go/coverage.out
+examples/go/go
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

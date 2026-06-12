@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      node: ${{ steps.filter.outputs.node }}
+      python: ${{ steps.filter.outputs.python }}
+      go: ${{ steps.filter.outputs.go }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            node:
+              - 'node/**'
+              - '.github/workflows/ci.yml'
+            python:
+              - 'python/**'
+              - '.github/workflows/ci.yml'
+            go:
+              - 'go/**'
+              - '.github/workflows/ci.yml'
+
+  node:
+    needs: changes
+    if: needs.changes.outputs.node == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: node
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: node/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  python:
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: python
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -e '.[dev]'
+      - run: ruff check .
+      - run: pytest -q
+
+  go:
+    needs: changes
+    if: needs.changes.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: go
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          # The module has zero dependencies, so there is no go.sum to key a cache on.
+          cache: false
+      - run: test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      - run: go test -race ./...

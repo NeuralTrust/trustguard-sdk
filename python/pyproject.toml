@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "neuraltrust-trustguard"
+version = "0.1.0"
+description = "Official Python SDK for the TrustGuard runtime guard API (POST /v1/guard)"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "NeuralTrust" }]
+requires-python = ">=3.9"
+dependencies = ["httpx>=0.27,<1"]
+keywords = ["neuraltrust", "trustguard", "guardrails", "llm-security", "ai-firewall"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/NeuralTrust/trustguard-sdk"
+Repository = "https://github.com/NeuralTrust/trustguard-sdk"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+    "respx>=0.21",
+    "ruff>=0.8",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/trustguard"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
