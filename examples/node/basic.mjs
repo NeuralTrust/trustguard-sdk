@@ -1,6 +1,6 @@
 // Basic guard call: evaluate a prompt and enforce the verdict.
 //
-//   export TRUSTGUARD_BASE_URL="https://your-deployment.example.com"
+//   export TRUSTGUARD_BASE_URL="https://guard.neuraltrust.ai"
 //   export TRUSTGUARD_API_KEY="your-collector-api-key"
 //   node basic.mjs
 
@@ -17,7 +17,6 @@ try {
     // Optional context: group turns into a session and identify the end user.
     sessionId: "demo-session-1",
     consumerId: "demo-user-1",
-    // metadata: { policy_id: "..." }, // only needed when the API key allows several policies
   });
 
   if (response.isFlagged) {

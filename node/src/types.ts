@@ -20,8 +20,7 @@ export interface GuardRequest {
   /** Identifies the end user on whose behalf the request runs. */
   consumerId?: string;
   /**
-   * Optional routing hints. Server-side keys: `policy_id` (selects the policy
-   * when the API key allows more than one) and `content_type` (overrides the
+   * Optional routing hints. Server-side key: `content_type` (overrides the
    * payload content type, default application/json).
    */
   metadata?: Record<string, unknown>;
@@ -55,7 +54,7 @@ export interface GuardResponse {
 
 /** Configuration for the TrustGuard client. */
 export interface TrustGuardOptions {
-  /** Base URL of the TrustGuard deployment, e.g. https://guard.example.com */
+  /** Base URL of the TrustGuard deployment, e.g. https://guard.neuraltrust.ai */
   baseUrl: string;
   /** Collector API key, sent as a Bearer token. */
   apiKey: string;

@@ -16,7 +16,7 @@ Requires Node.js 18+ (uses the built-in `fetch`). Zero runtime dependencies; shi
 import { TrustGuard } from "@neuraltrust/trustguard-sdk";
 
 const client = new TrustGuard({
-  baseUrl: "https://guard.example.com",
+  baseUrl: "https://guard.neuraltrust.ai",
   apiKey: process.env.TRUSTGUARD_API_KEY!,
 });
 
@@ -34,7 +34,6 @@ const response = await client.guard({
   direction: "output",                // "input" (default) or "output"
   sessionId: "conversation-42",       // groups multi-turn traffic
   consumerId: "user-7",               // the end user behind the request
-  metadata: { policy_id: "..." },     // required when the API key allows several policies
 });
 ```
 

@@ -1,6 +1,6 @@
 """Async guard call, e.g. from a FastAPI/aiohttp service.
 
-    export TRUSTGUARD_BASE_URL="https://your-deployment.example.com"
+    export TRUSTGUARD_BASE_URL="https://guard.neuraltrust.ai"
     export TRUSTGUARD_API_KEY="your-collector-api-key"
     python async_basic.py
 """

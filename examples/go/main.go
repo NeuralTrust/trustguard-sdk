@@ -1,7 +1,7 @@
 // Command example demonstrates the TrustGuard Go SDK: a basic guard call with
 // enforcement, error handling, and attachment scanning.
 //
-//	export TRUSTGUARD_BASE_URL="https://your-deployment.example.com"
+//	export TRUSTGUARD_BASE_URL="https://guard.neuraltrust.ai"
 //	export TRUSTGUARD_API_KEY="your-collector-api-key"
 //	go run .
 package main
@@ -37,8 +37,6 @@ func main() {
 		// Optional context: group turns into a session and identify the end user.
 		SessionID:  "demo-session-1",
 		ConsumerID: "demo-user-1",
-		// Metadata: map[string]any{trustguard.MetadataPolicyID: "..."}, // only when the
-		// API key allows several policies
 	}
 	// Attach a document so file-aware plugins in the policy can evaluate it.
 	req.AddAttachment(trustguard.Attachment{

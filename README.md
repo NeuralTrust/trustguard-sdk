@@ -39,7 +39,7 @@ sequenceDiagram
 ```typescript
 import { TrustGuard } from "@neuraltrust/trustguard-sdk";
 
-const client = new TrustGuard({ baseUrl: "https://guard.example.com", apiKey: process.env.TRUSTGUARD_API_KEY! });
+const client = new TrustGuard({ baseUrl: "https://guard.neuraltrust.ai", apiKey: process.env.TRUSTGUARD_API_KEY! });
 const res = await client.guard({ input: { prompt: "user text" } });
 if (res.isFlagged) {
   // block the request
@@ -51,7 +51,7 @@ if (res.isFlagged) {
 ```python
 from trustguard import TrustGuard
 
-with TrustGuard("https://guard.example.com", api_key="...") as client:
+with TrustGuard("https://guard.neuraltrust.ai", api_key="...") as client:
     res = client.guard({"prompt": "user text"})
     if res.is_flagged:
         ...  # block the request
@@ -60,7 +60,7 @@ with TrustGuard("https://guard.example.com", api_key="...") as client:
 **Go**
 
 ```go
-client, _ := trustguard.New("https://guard.example.com", os.Getenv("TRUSTGUARD_API_KEY"))
+client, _ := trustguard.New("https://guard.neuraltrust.ai", os.Getenv("TRUSTGUARD_API_KEY"))
 res, err := client.Guard(ctx, trustguard.GuardRequest{Input: map[string]any{"prompt": "user text"}})
 if err == nil && res.IsFlagged {
     // block the request
@@ -78,7 +78,6 @@ Beyond `input`, every SDK supports the same optional context:
 | `direction` | `input` (default) evaluates what goes *into* the model, `output` what comes back |
 | `session_id` | Groups multi-turn conversations for session-aware detections |
 | `consumer_id` | Identifies the end user behind the request |
-| `metadata.policy_id` | Selects the policy when the API key is allowed more than one |
 | attachments | Documents (base64-encoded on the wire) for file-aware plugins |
 
 And every response carries `is_flagged`, the full `findings` list, the `transformed_payload` when a masking plugin rewrote content, and `trace_id`/`request_id` for support and telemetry.

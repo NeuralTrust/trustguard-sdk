@@ -18,10 +18,10 @@ func TestNew_Validation(t *testing.T) {
 		apiKey  string
 		wantErr bool
 	}{
-		{name: "valid", baseURL: "https://guard.example.com", apiKey: "key", wantErr: false},
-		{name: "trailing slash trimmed", baseURL: "https://guard.example.com/", apiKey: "key", wantErr: false},
+		{name: "valid", baseURL: "https://guard.neuraltrust.ai", apiKey: "key", wantErr: false},
+		{name: "trailing slash trimmed", baseURL: "https://guard.neuraltrust.ai/", apiKey: "key", wantErr: false},
 		{name: "missing base url", baseURL: "  ", apiKey: "key", wantErr: true},
-		{name: "missing api key", baseURL: "https://guard.example.com", apiKey: "", wantErr: true},
+		{name: "missing api key", baseURL: "https://guard.neuraltrust.ai", apiKey: "", wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -36,7 +36,7 @@ func TestNew_Validation(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			if c.baseURL != "https://guard.example.com" {
+			if c.baseURL != "https://guard.neuraltrust.ai" {
 				t.Fatalf("baseURL not normalized: %q", c.baseURL)
 			}
 		})
@@ -72,7 +72,7 @@ func TestGuard_SendsExpectedRequest(t *testing.T) {
 		Direction:  DirectionOutput,
 		SessionID:  "s-1",
 		ConsumerID: "u-1",
-		Metadata:   map[string]any{"policy_id": "11111111-1111-1111-1111-111111111111"},
+		Metadata:   map[string]any{"channel": "web"},
 	}
 	if _, err := c.Guard(context.Background(), req); err != nil {
 		t.Fatalf("Guard: %v", err)
@@ -92,7 +92,7 @@ func TestGuard_SendsExpectedRequest(t *testing.T) {
 		"direction":   "output",
 		"session_id":  "s-1",
 		"consumer_id": "u-1",
-		"metadata":    map[string]any{"policy_id": "11111111-1111-1111-1111-111111111111"},
+		"metadata":    map[string]any{"channel": "web"},
 	}
 	if !reflect.DeepEqual(got.payload, want) {
 		t.Errorf("payload = %#v, want %#v", got.payload, want)
@@ -218,7 +218,7 @@ func TestGuard_APIErrors(t *testing.T) {
 
 func TestGuard_MissingInput(t *testing.T) {
 	t.Parallel()
-	c, _ := New("https://guard.example.com", "key")
+	c, _ := New("https://guard.neuraltrust.ai", "key")
 	if _, err := c.Guard(context.Background(), GuardRequest{}); err == nil {
 		t.Fatal("expected error for missing input")
 	}

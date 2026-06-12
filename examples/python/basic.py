@@ -1,6 +1,6 @@
 """Basic guard call: evaluate a prompt and enforce the verdict.
 
-    export TRUSTGUARD_BASE_URL="https://your-deployment.example.com"
+    export TRUSTGUARD_BASE_URL="https://guard.neuraltrust.ai"
     export TRUSTGUARD_API_KEY="your-collector-api-key"
     python basic.py
 """
@@ -20,7 +20,6 @@ def main() -> int:
                 # Optional context: group turns into a session and identify the end user.
                 session_id="demo-session-1",
                 consumer_id="demo-user-1",
-                # metadata={"policy_id": "..."},  # only when the API key allows several policies
             )
         except TrustGuardAPIError as err:
             # 401 = bad API key, 403 = policy not allowed, 400 = malformed request...

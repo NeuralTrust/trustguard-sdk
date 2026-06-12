@@ -1,7 +1,7 @@
 // Attachment scanning: send a document alongside the prompt so file-aware
 // plugins in the policy can evaluate it.
 //
-//   export TRUSTGUARD_BASE_URL="https://your-deployment.example.com"
+//   export TRUSTGUARD_BASE_URL="https://guard.neuraltrust.ai"
 //   export TRUSTGUARD_API_KEY="your-collector-api-key"
 //   node attachments.mjs [path/to/file]
 

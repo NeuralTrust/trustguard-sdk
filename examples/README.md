@@ -3,7 +3,7 @@
 Runnable examples for each SDK. They all expect two environment variables:
 
 ```bash
-export TRUSTGUARD_BASE_URL="https://your-trustguard-deployment.example.com"
+export TRUSTGUARD_BASE_URL="https://guard.neuraltrust.ai"
 export TRUSTGUARD_API_KEY="your-collector-api-key"
 ```
 

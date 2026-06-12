@@ -15,7 +15,7 @@ Requires Python 3.9+. The only dependency is `httpx`.
 ```python
 from trustguard import TrustGuard
 
-client = TrustGuard("https://guard.example.com", api_key="YOUR_API_KEY")
+client = TrustGuard("https://guard.neuraltrust.ai", api_key="YOUR_API_KEY")
 
 response = client.guard({"prompt": "user text to evaluate"})
 if response.is_flagged:
@@ -28,7 +28,7 @@ client.close()  # or use the context manager below
 As a context manager:
 
 ```python
-with TrustGuard("https://guard.example.com", api_key="YOUR_API_KEY") as client:
+with TrustGuard("https://guard.neuraltrust.ai", api_key="YOUR_API_KEY") as client:
     response = client.guard({"prompt": "user text"})
 ```
 
@@ -37,7 +37,7 @@ with TrustGuard("https://guard.example.com", api_key="YOUR_API_KEY") as client:
 ```python
 from trustguard import AsyncTrustGuard
 
-async with AsyncTrustGuard("https://guard.example.com", api_key="YOUR_API_KEY") as client:
+async with AsyncTrustGuard("https://guard.neuraltrust.ai", api_key="YOUR_API_KEY") as client:
     response = await client.guard({"prompt": "user text"})
 ```
 
@@ -49,7 +49,6 @@ response = client.guard(
     direction="output",            # "input" (default) or "output"
     session_id="conversation-42",  # groups multi-turn traffic
     consumer_id="user-7",          # the end user behind the request
-    metadata={"policy_id": "..."}, # required when the API key allows several policies
 )
 ```
 

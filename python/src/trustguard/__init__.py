@@ -5,7 +5,6 @@ from ._errors import TrustGuardAPIError
 from ._models import (
     METADATA_ATTACHMENTS,
     METADATA_CONTENT_TYPE,
-    METADATA_POLICY_ID,
     Attachment,
     Finding,
     GuardResponse,
@@ -14,7 +13,6 @@ from ._models import (
 __all__ = [
     "METADATA_ATTACHMENTS",
     "METADATA_CONTENT_TYPE",
-    "METADATA_POLICY_ID",
     "AsyncTrustGuard",
     "Attachment",
     "Finding",

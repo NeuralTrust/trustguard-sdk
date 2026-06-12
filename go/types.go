@@ -13,8 +13,6 @@ const (
 
 // Metadata keys with server-side meaning.
 const (
-	// MetadataPolicyID selects the policy when the API key allows more than one.
-	MetadataPolicyID = "policy_id"
 	// MetadataContentType overrides the payload content type (default application/json).
 	MetadataContentType = "content_type"
 	// MetadataAttachments carries base64-encoded documents for file-aware plugins.

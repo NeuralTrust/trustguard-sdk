@@ -24,7 +24,7 @@ import (
 )
 
 func main() {
-	client, err := trustguard.New("https://guard.example.com", os.Getenv("TRUSTGUARD_API_KEY"))
+	client, err := trustguard.New("https://guard.neuraltrust.ai", os.Getenv("TRUSTGUARD_API_KEY"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,9 +49,6 @@ resp, err := client.Guard(ctx, trustguard.GuardRequest{
 	Direction:  trustguard.DirectionOutput, // input (default) or output
 	SessionID:  "conversation-42",          // groups multi-turn traffic
 	ConsumerID: "user-7",                   // the end user behind the request
-	Metadata: map[string]any{
-		trustguard.MetadataPolicyID: "...", // required when the API key allows several policies
-	},
 })
 ```
 

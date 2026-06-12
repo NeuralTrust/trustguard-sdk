@@ -6,8 +6,6 @@ import base64
 from dataclasses import dataclass, field
 from typing import Any
 
-#: Metadata key that selects the policy when the API key allows more than one.
-METADATA_POLICY_ID = "policy_id"
 #: Metadata key that overrides the payload content type (default application/json).
 METADATA_CONTENT_TYPE = "content_type"
 #: Metadata key that carries base64-encoded documents for file-aware plugins.

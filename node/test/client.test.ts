@@ -20,7 +20,7 @@ const okBody = {
 function clientWith(response: Response) {
   const fetchMock = vi.fn().mockResolvedValue(response);
   const client = new TrustGuard({
-    baseUrl: "https://guard.example.com",
+    baseUrl: "https://guard.neuraltrust.ai",
     apiKey: "secret-key",
     fetch: fetchMock as unknown as typeof fetch,
   });
@@ -33,7 +33,7 @@ describe("constructor", () => {
   });
 
   it("requires apiKey", () => {
-    expect(() => new TrustGuard({ baseUrl: "https://guard.example.com", apiKey: "" })).toThrow(/apiKey/);
+    expect(() => new TrustGuard({ baseUrl: "https://guard.neuraltrust.ai", apiKey: "" })).toThrow(/apiKey/);
   });
 });
 
@@ -46,12 +46,12 @@ describe("guard", () => {
       direction: "output",
       sessionId: "s-1",
       consumerId: "u-1",
-      metadata: { policy_id: "11111111-1111-1111-1111-111111111111" },
+      metadata: { channel: "web" },
     });
 
     expect(fetchMock).toHaveBeenCalledOnce();
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe("https://guard.example.com/v1/guard");
+    expect(url).toBe("https://guard.neuraltrust.ai/v1/guard");
     expect(init.method).toBe("POST");
     expect(init.headers).toMatchObject({
       Authorization: "Bearer secret-key",
@@ -62,21 +62,21 @@ describe("guard", () => {
       direction: "output",
       session_id: "s-1",
       consumer_id: "u-1",
-      metadata: { policy_id: "11111111-1111-1111-1111-111111111111" },
+      metadata: { channel: "web" },
     });
   });
 
   it("trims trailing slashes from the base url", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, okBody));
     const client = new TrustGuard({
-      baseUrl: "https://guard.example.com//",
+      baseUrl: "https://guard.neuraltrust.ai//",
       apiKey: "k",
       fetch: fetchMock as unknown as typeof fetch,
     });
 
     await client.guard({ input: { prompt: "hi" } });
 
-    expect(fetchMock.mock.calls[0]![0]).toBe("https://guard.example.com/v1/guard");
+    expect(fetchMock.mock.calls[0]![0]).toBe("https://guard.neuraltrust.ai/v1/guard");
   });
 
   it("omits empty optional fields (server rejects unknown/extra top-level keys)", async () => {

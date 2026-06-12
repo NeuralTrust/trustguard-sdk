@@ -10,7 +10,7 @@ import respx
 
 from trustguard import AsyncTrustGuard, Attachment, Finding, TrustGuard, TrustGuardAPIError
 
-BASE_URL = "https://guard.example.com"
+BASE_URL = "https://guard.neuraltrust.ai"
 GUARD_URL = f"{BASE_URL}/v1/guard"
 
 OK_BODY = {
@@ -58,7 +58,7 @@ def test_guard_sends_expected_request() -> None:
             direction="output",
             session_id="s-1",
             consumer_id="u-1",
-            metadata={"policy_id": "11111111-1111-1111-1111-111111111111"},
+            metadata={"channel": "web"},
         )
 
     request = route.calls.last.request
@@ -69,7 +69,7 @@ def test_guard_sends_expected_request() -> None:
         "direction": "output",
         "session_id": "s-1",
         "consumer_id": "u-1",
-        "metadata": {"policy_id": "11111111-1111-1111-1111-111111111111"},
+        "metadata": {"channel": "web"},
     }
 
 
