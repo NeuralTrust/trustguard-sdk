@@ -22,10 +22,6 @@ export interface GuardRequest {
   direction?: Direction;
   /** Traffic protocol; the server defaults to "all" when omitted. */
   protocol?: Protocol;
-  /** Addresses the collector to evaluate against. With a service token, provide this or `gatewayId`. */
-  collectorKey?: string;
-  /** Addresses the collector by its configured gateway id (alternative to `collectorKey`). */
-  gatewayId?: string;
   /** Groups multi-turn traffic; the server synthesises one when omitted. */
   sessionId?: string;
   /** Identifies the end user on whose behalf the request runs. */

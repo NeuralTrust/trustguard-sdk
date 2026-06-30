@@ -68,13 +68,12 @@ func TestGuard_SendsExpectedRequest(t *testing.T) {
 	}
 
 	req := GuardRequest{
-		Payload:      map[string]any{"input": "hello"},
-		Direction:    DirectionOutput,
-		Protocol:     ProtocolLLM,
-		CollectorKey: "ck-1",
-		SessionID:    "s-1",
-		ConsumerID:   "u-1",
-		Attributes:   map[string]any{"content_type": "text/plain"},
+		Payload:    map[string]any{"input": "hello"},
+		Direction:  DirectionOutput,
+		Protocol:   ProtocolLLM,
+		SessionID:  "s-1",
+		ConsumerID: "u-1",
+		Attributes: map[string]any{"content_type": "text/plain"},
 	}
 	if _, err := c.Guard(context.Background(), req); err != nil {
 		t.Fatalf("Guard: %v", err)
@@ -90,13 +89,12 @@ func TestGuard_SendsExpectedRequest(t *testing.T) {
 		t.Errorf("content type = %q", got.ct)
 	}
 	want := map[string]any{
-		"payload":       map[string]any{"input": "hello"},
-		"direction":     "output",
-		"protocol":      "llm",
-		"collector_key": "ck-1",
-		"session_id":    "s-1",
-		"consumer_id":   "u-1",
-		"attributes":    map[string]any{"content_type": "text/plain"},
+		"payload":     map[string]any{"input": "hello"},
+		"direction":   "output",
+		"protocol":    "llm",
+		"session_id":  "s-1",
+		"consumer_id": "u-1",
+		"attributes":  map[string]any{"content_type": "text/plain"},
 	}
 	if !reflect.DeepEqual(got.payload, want) {
 		t.Errorf("payload = %#v, want %#v", got.payload, want)
@@ -120,7 +118,7 @@ func TestGuard_OmitsEmptyOptionalFields(t *testing.T) {
 	}
 
 	// The server rejects unknown top-level fields, so empty optionals must be absent.
-	for _, field := range []string{"direction", "protocol", "collector_key", "gateway_id", "session_id", "consumer_id", "attributes"} {
+	for _, field := range []string{"direction", "protocol", "session_id", "consumer_id", "attributes"} {
 		if _, ok := payload[field]; ok {
 			t.Errorf("field %q should be omitted when empty", field)
 		}

@@ -106,8 +106,6 @@ def build_payload(
     *,
     direction: str | None = None,
     protocol: str | None = None,
-    collector_key: str | None = None,
-    gateway_id: str | None = None,
     session_id: str | None = None,
     consumer_id: str | None = None,
     attributes: dict[str, Any] | None = None,
@@ -124,10 +122,6 @@ def build_payload(
         body["direction"] = direction
     if protocol:
         body["protocol"] = protocol
-    if collector_key:
-        body["collector_key"] = collector_key
-    if gateway_id:
-        body["gateway_id"] = gateway_id
     if session_id:
         body["session_id"] = session_id
     if consumer_id:

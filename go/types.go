@@ -47,12 +47,6 @@ type GuardRequest struct {
 	Direction Direction `json:"direction,omitempty"`
 	// Protocol is the traffic protocol; the server defaults empty to all.
 	Protocol Protocol `json:"protocol,omitempty"`
-	// CollectorKey addresses the collector to evaluate against. With a service
-	// token, provide exactly one of CollectorKey or GatewayID; omit both when the
-	// API key is already bound to a collector.
-	CollectorKey string `json:"collector_key,omitempty"`
-	// GatewayID addresses the collector by its configured gateway id (alternative to CollectorKey).
-	GatewayID string `json:"gateway_id,omitempty"`
 	// SessionID groups multi-turn traffic; the server synthesises one when empty.
 	SessionID string `json:"session_id,omitempty"`
 	// ConsumerID identifies the end user on whose behalf the request runs.

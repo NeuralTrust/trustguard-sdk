@@ -24,7 +24,7 @@ sequenceDiagram
     participant SDK as TrustGuard SDK
     participant TG as TrustGuard /v1/guard
 
-    App->>SDK: guard({ payload, collector_key, ... })
+    App->>SDK: guard({ payload, session_id, ... })
     SDK->>TG: POST /v1/guard (Bearer API key)
     TG->>TG: Run the collector's policy plugin chain
     TG-->>SDK: status, findings, transformed_payload
@@ -75,7 +75,6 @@ The `payload` is the content to evaluate (e.g. `{ input: "..." }` or provider-sh
 
 | Option | Purpose |
 |---|---|
-| `collector_key` / `gateway_id` | Addresses the collector to evaluate against (with a service token; omit when the API key is bound to a collector) |
 | `direction` | `input` (default) evaluates what goes *into* the model, `output` what comes back |
 | `protocol` | `all` (default), `llm`, `mcp`, or `a2a` — scopes which rules run |
 | `session_id` | Groups multi-turn conversations for session-aware detections |

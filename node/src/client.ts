@@ -81,8 +81,6 @@ function serializeRequest(request: GuardRequest): Record<string, unknown> {
   const body: Record<string, unknown> = { payload };
   if (request.direction) body.direction = request.direction;
   if (request.protocol) body.protocol = request.protocol;
-  if (request.collectorKey) body.collector_key = request.collectorKey;
-  if (request.gatewayId) body.gateway_id = request.gatewayId;
   if (request.sessionId) body.session_id = request.sessionId;
   if (request.consumerId) body.consumer_id = request.consumerId;
   if (request.attributes && Object.keys(request.attributes).length > 0) body.attributes = request.attributes;

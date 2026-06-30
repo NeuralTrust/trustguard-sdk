@@ -57,8 +57,6 @@ class TrustGuard:
         *,
         direction: str | None = None,
         protocol: str | None = None,
-        collector_key: str | None = None,
-        gateway_id: str | None = None,
         session_id: str | None = None,
         consumer_id: str | None = None,
         attributes: dict[str, Any] | None = None,
@@ -66,16 +64,12 @@ class TrustGuard:
     ) -> GuardResponse:
         """Evaluate ``payload`` against the collector's policy.
 
-        Address the collector with ``collector_key`` or ``gateway_id`` when using
-        a service token; omit both when the API key is bound to a collector.
         Raises :class:`TrustGuardAPIError` on non-2xx responses.
         """
         body = build_payload(
             payload,
             direction=direction,
             protocol=protocol,
-            collector_key=collector_key,
-            gateway_id=gateway_id,
             session_id=session_id,
             consumer_id=consumer_id,
             attributes=attributes,
@@ -126,8 +120,6 @@ class AsyncTrustGuard:
         *,
         direction: str | None = None,
         protocol: str | None = None,
-        collector_key: str | None = None,
-        gateway_id: str | None = None,
         session_id: str | None = None,
         consumer_id: str | None = None,
         attributes: dict[str, Any] | None = None,
@@ -135,16 +127,12 @@ class AsyncTrustGuard:
     ) -> GuardResponse:
         """Evaluate ``payload`` against the collector's policy.
 
-        Address the collector with ``collector_key`` or ``gateway_id`` when using
-        a service token; omit both when the API key is bound to a collector.
         Raises :class:`TrustGuardAPIError` on non-2xx responses.
         """
         body = build_payload(
             payload,
             direction=direction,
             protocol=protocol,
-            collector_key=collector_key,
-            gateway_id=gateway_id,
             session_id=session_id,
             consumer_id=consumer_id,
             attributes=attributes,

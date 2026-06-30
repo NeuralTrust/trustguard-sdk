@@ -17,7 +17,7 @@ from trustguard import TrustGuard
 
 client = TrustGuard("https://guard.neuraltrust.ai", api_key="YOUR_API_KEY")
 
-response = client.guard({"input": "user text to evaluate"}, collector_key="your-collector-key")
+response = client.guard({"input": "user text to evaluate"})
 if response.is_blocked:
     # block the request
     ...
@@ -48,14 +48,11 @@ response = client.guard(
     {"input": "user text"},
     direction="output",            # "input" (default) or "output"
     protocol="llm",                # "all" (default), "llm", "mcp", or "a2a"
-    collector_key="your-collector-key",  # addresses the collector (or gateway_id)
     session_id="conversation-42",  # groups multi-turn traffic
     consumer_id="user-7",          # the end user behind the request
     attributes={"content_type": "text/plain"},  # routing hints
 )
 ```
-
-Address the collector with `collector_key` or `gateway_id` when using a service token; omit both when the API key is already bound to a collector.
 
 ### Attachments
 

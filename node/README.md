@@ -20,10 +20,7 @@ const client = new TrustGuard({
   apiKey: process.env.TRUSTGUARD_API_KEY!,
 });
 
-const response = await client.guard({
-  payload: { input: "user text to evaluate" },
-  collectorKey: "your-collector-key", // omit when the API key is bound to a collector
-});
+const response = await client.guard({ payload: { input: "user text to evaluate" } });
 if (response.isBlocked) {
   // block the request
 }
@@ -36,14 +33,11 @@ const response = await client.guard({
   payload: { input: "user text" },
   direction: "output",                // "input" (default) or "output"
   protocol: "llm",                    // "all" (default), "llm", "mcp", or "a2a"
-  collectorKey: "your-collector-key", // addresses the collector (or gatewayId)
   sessionId: "conversation-42",       // groups multi-turn traffic
   consumerId: "user-7",               // the end user behind the request
   attributes: { content_type: "text/plain" }, // routing hints
 });
 ```
-
-Address the collector with `collectorKey` or `gatewayId` when using a service token; omit both when the API key is already bound to a collector.
 
 ### Attachments
 

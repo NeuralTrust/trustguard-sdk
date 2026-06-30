@@ -30,8 +30,7 @@ func main() {
 	}
 
 	resp, err := client.Guard(context.Background(), trustguard.GuardRequest{
-		Payload:      map[string]any{"input": "user text to evaluate"},
-		CollectorKey: "your-collector-key", // omit when the API key is bound to a collector
+		Payload: map[string]any{"input": "user text to evaluate"},
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -46,17 +45,14 @@ func main() {
 
 ```go
 resp, err := client.Guard(ctx, trustguard.GuardRequest{
-	Payload:      map[string]any{"input": "user text"},
-	Direction:    trustguard.DirectionOutput, // input (default) or output
-	Protocol:     trustguard.ProtocolLLM,     // all (default), llm, mcp, or a2a
-	CollectorKey: "your-collector-key",       // addresses the collector (or set GatewayID)
-	SessionID:    "conversation-42",          // groups multi-turn traffic
-	ConsumerID:   "user-7",                   // the end user behind the request
-	Attributes:   map[string]any{"content_type": "text/plain"}, // routing hints
+	Payload:    map[string]any{"input": "user text"},
+	Direction:  trustguard.DirectionOutput, // input (default) or output
+	Protocol:   trustguard.ProtocolLLM,     // all (default), llm, mcp, or a2a
+	SessionID:  "conversation-42",          // groups multi-turn traffic
+	ConsumerID: "user-7",                   // the end user behind the request
+	Attributes: map[string]any{"content_type": "text/plain"}, // routing hints
 })
 ```
-
-Address the collector with exactly one of `CollectorKey` or `GatewayID` when using a service token; omit both when the API key is already bound to a collector.
 
 Client options: `trustguard.WithTimeout(5*time.Second)` (default 10s) and `trustguard.WithHTTPClient(custom)` for proxies or test doubles.
 
