@@ -6,5 +6,6 @@ export type {
   Finding,
   GuardRequest,
   GuardResponse,
+  Protocol,
   TrustGuardOptions,
 } from "./types.js";

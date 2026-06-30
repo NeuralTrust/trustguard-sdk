@@ -17,8 +17,8 @@ from trustguard import TrustGuard
 
 client = TrustGuard("https://guard.neuraltrust.ai", api_key="YOUR_API_KEY")
 
-response = client.guard({"prompt": "user text to evaluate"})
-if response.is_flagged:
+response = client.guard({"input": "user text to evaluate"}, collector_key="your-collector-key")
+if response.is_blocked:
     # block the request
     ...
 
@@ -29,7 +29,7 @@ As a context manager:
 
 ```python
 with TrustGuard("https://guard.neuraltrust.ai", api_key="YOUR_API_KEY") as client:
-    response = client.guard({"prompt": "user text"})
+    response = client.guard({"input": "user text"})
 ```
 
 ### Async
@@ -38,29 +38,34 @@ with TrustGuard("https://guard.neuraltrust.ai", api_key="YOUR_API_KEY") as clien
 from trustguard import AsyncTrustGuard
 
 async with AsyncTrustGuard("https://guard.neuraltrust.ai", api_key="YOUR_API_KEY") as client:
-    response = await client.guard({"prompt": "user text"})
+    response = await client.guard({"input": "user text"})
 ```
 
 ### Options
 
 ```python
 response = client.guard(
-    {"prompt": "user text"},
+    {"input": "user text"},
     direction="output",            # "input" (default) or "output"
+    protocol="llm",                # "all" (default), "llm", "mcp", or "a2a"
+    collector_key="your-collector-key",  # addresses the collector (or gateway_id)
     session_id="conversation-42",  # groups multi-turn traffic
     consumer_id="user-7",          # the end user behind the request
+    attributes={"content_type": "text/plain"},  # routing hints
 )
 ```
 
+Address the collector with `collector_key` or `gateway_id` when using a service token; omit both when the API key is already bound to a collector.
+
 ### Attachments
 
-Documents are base64-encoded into `metadata.attachments` for file-aware plugins:
+Documents are base64-encoded into `payload.attachments` for file-aware plugins (or pass a `url` for the server to fetch):
 
 ```python
 from trustguard import Attachment
 
 response = client.guard(
-    {"prompt": "summarize this file"},
+    {"input": "summarize this file"},
     attachments=[Attachment(filename="doc.pdf", content_type="application/pdf", data=pdf_bytes)],
 )
 ```
@@ -69,8 +74,8 @@ response = client.guard(
 
 | Field | Meaning |
 |---|---|
-| `is_flagged` | The enforcement signal: block when `True` |
-| `findings` | What every plugin in the policy chain reported (`detection_type`, `confidence`, `rule_name`, `details`) |
+| `status` | Most restrictive verdict: `block`, `transform`, `report`, or empty when clean. `is_blocked` is `True` when it is `block` |
+| `findings` | What every plugin in the policy chain reported (`detection_type`, `confidence`, `rule_name`, `status`, `policy_id`, `detector_id`, `action`, `details`) |
 | `transformed_payload` | The payload as rewritten by in-flight masking, `None` when untouched |
 | `trace_id` / `request_id` | Correlation ids for TrustGuard telemetry |
 

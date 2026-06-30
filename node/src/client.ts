@@ -8,11 +8,15 @@ interface WireFinding {
   detection_type?: string;
   confidence?: number;
   rule_name?: string;
+  status?: string;
+  policy_id?: string;
+  detector_id?: string;
+  action?: string;
   details?: unknown;
 }
 
 interface WireResponse {
-  is_flagged?: boolean;
+  status?: string;
   transformed_payload?: Record<string, unknown> | null;
   findings?: WireFinding[];
   trace_id?: string;
@@ -45,8 +49,8 @@ export class TrustGuard {
    * returns the verdict. Throws TrustGuardAPIError on non-2xx responses.
    */
   async guard(request: GuardRequest): Promise<GuardResponse> {
-    if (!request.input) {
-      throw new Error("TrustGuard: request input is required");
+    if (!request.payload) {
+      throw new Error("TrustGuard: request payload is required");
     }
 
     const response = await this.#fetch(this.#baseUrl + GUARD_PATH, {
@@ -70,38 +74,50 @@ export class TrustGuard {
 
 /** Maps the camelCase request onto the snake_case wire format, omitting empty optionals (the server rejects unknown top-level fields). */
 function serializeRequest(request: GuardRequest): Record<string, unknown> {
-  const body: Record<string, unknown> = { input: request.input };
+  let payload = request.payload;
+  if (request.attachments?.length) {
+    payload = { ...payload, attachments: request.attachments.map(serializeAttachment) };
+  }
+  const body: Record<string, unknown> = { payload };
   if (request.direction) body.direction = request.direction;
+  if (request.protocol) body.protocol = request.protocol;
+  if (request.collectorKey) body.collector_key = request.collectorKey;
+  if (request.gatewayId) body.gateway_id = request.gatewayId;
   if (request.sessionId) body.session_id = request.sessionId;
   if (request.consumerId) body.consumer_id = request.consumerId;
-
-  let metadata = request.metadata;
-  if (request.attachments?.length) {
-    metadata = { ...metadata, attachments: request.attachments.map(serializeAttachment) };
-  }
-  if (metadata && Object.keys(metadata).length > 0) body.metadata = metadata;
+  if (request.attributes && Object.keys(request.attributes).length > 0) body.attributes = request.attributes;
   return body;
 }
 
 function serializeAttachment(attachment: Attachment): Record<string, string> {
-  const bytes =
-    typeof attachment.data === "string" ? Buffer.from(attachment.data, "utf-8") : Buffer.from(attachment.data);
-  return {
+  const entry: Record<string, string> = {
     filename: attachment.filename,
     content_type: attachment.contentType,
-    data: bytes.toString("base64"),
   };
+  if (attachment.data !== undefined) {
+    const bytes =
+      typeof attachment.data === "string" ? Buffer.from(attachment.data, "utf-8") : Buffer.from(attachment.data);
+    entry.data = bytes.toString("base64");
+  }
+  if (attachment.url !== undefined) entry.url = attachment.url;
+  return entry;
 }
 
 function deserializeResponse(wire: WireResponse): GuardResponse {
+  const status = wire.status ?? "";
   return {
-    isFlagged: wire.is_flagged ?? false,
+    status,
+    isBlocked: status === "block",
     transformedPayload: wire.transformed_payload ?? null,
     findings: (wire.findings ?? []).map(
       (f): Finding => ({
         detectionType: f.detection_type,
         confidence: f.confidence,
         ruleName: f.rule_name,
+        status: f.status,
+        policyId: f.policy_id,
+        detectorId: f.detector_id,
+        action: f.action,
         details: f.details,
       }),
     ),

@@ -16,11 +16,11 @@ async def main() -> None:
         os.environ["TRUSTGUARD_BASE_URL"], os.environ["TRUSTGUARD_API_KEY"]
     ) as client:
         response = await client.guard(
-            {"prompt": "What is the capital of France?"},
+            {"input": "What is the capital of France?"},
             session_id="demo-session-2",
         )
 
-    print("BLOCKED" if response.is_flagged else "allowed", f"({len(response.findings)} findings)")
+    print("BLOCKED" if response.is_blocked else "allowed", f"({len(response.findings)} findings)")
 
 
 if __name__ == "__main__":

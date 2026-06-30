@@ -10,7 +10,7 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 const okBody = {
-  is_flagged: false,
+  status: "",
   transformed_payload: null,
   findings: [],
   trace_id: "t-1",
@@ -42,11 +42,13 @@ describe("guard", () => {
     const { client, fetchMock } = clientWith(jsonResponse(200, okBody));
 
     await client.guard({
-      input: { prompt: "hello" },
+      payload: { input: "hello" },
       direction: "output",
+      protocol: "llm",
+      collectorKey: "ck-1",
       sessionId: "s-1",
       consumerId: "u-1",
-      metadata: { channel: "web" },
+      attributes: { content_type: "text/plain" },
     });
 
     expect(fetchMock).toHaveBeenCalledOnce();
@@ -58,11 +60,13 @@ describe("guard", () => {
       "Content-Type": "application/json",
     });
     expect(JSON.parse(init.body)).toEqual({
-      input: { prompt: "hello" },
+      payload: { input: "hello" },
       direction: "output",
+      protocol: "llm",
+      collector_key: "ck-1",
       session_id: "s-1",
       consumer_id: "u-1",
-      metadata: { channel: "web" },
+      attributes: { content_type: "text/plain" },
     });
   });
 
@@ -74,7 +78,7 @@ describe("guard", () => {
       fetch: fetchMock as unknown as typeof fetch,
     });
 
-    await client.guard({ input: { prompt: "hi" } });
+    await client.guard({ payload: { input: "hi" } });
 
     expect(fetchMock.mock.calls[0]![0]).toBe("https://guard.neuraltrust.ai/v1/guard");
   });
@@ -82,49 +86,72 @@ describe("guard", () => {
   it("omits empty optional fields (server rejects unknown/extra top-level keys)", async () => {
     const { client, fetchMock } = clientWith(jsonResponse(200, okBody));
 
-    await client.guard({ input: { prompt: "hi" } });
+    await client.guard({ payload: { input: "hi" } });
 
     const body = JSON.parse(fetchMock.mock.calls[0]![1].body);
-    expect(Object.keys(body)).toEqual(["input"]);
+    expect(Object.keys(body)).toEqual(["payload"]);
   });
 
-  it("folds attachments into metadata.attachments as base64", async () => {
+  it("folds attachments into payload.attachments as base64", async () => {
     const { client, fetchMock } = clientWith(jsonResponse(200, okBody));
 
     await client.guard({
-      input: { prompt: "hi" },
+      payload: { input: "hi" },
       attachments: [
         { filename: "doc.txt", contentType: "text/plain", data: "hello" },
         { filename: "img.png", contentType: "image/png", data: new Uint8Array([0x89, 0x50]) },
+        { filename: "report.txt", contentType: "text/plain", url: "https://example.com/r.txt" },
       ],
     });
 
     const body = JSON.parse(fetchMock.mock.calls[0]![1].body);
-    expect(body.metadata.attachments).toEqual([
+    expect(body.payload.attachments).toEqual([
       { filename: "doc.txt", content_type: "text/plain", data: "aGVsbG8=" },
       { filename: "img.png", content_type: "image/png", data: "iVA=" },
+      { filename: "report.txt", content_type: "text/plain", url: "https://example.com/r.txt" },
     ]);
   });
 
-  it("deserializes a flagged response", async () => {
+  it("deserializes a blocked response", async () => {
     const { client } = clientWith(
       jsonResponse(200, {
-        is_flagged: true,
+        status: "block",
         transformed_payload: { prompt: "[MASKED]" },
         findings: [
-          { detection_type: "jailbreak", confidence: 0.97, rule_name: "jb-1", details: { plugin: "jailbreak" } },
+          {
+            detection_type: "jailbreak",
+            confidence: 0.97,
+            rule_name: "jb-1",
+            status: "block",
+            policy_id: "p-1",
+            detector_id: "d-1",
+            action: "block",
+            details: { plugin: "jailbreak" },
+          },
         ],
         trace_id: "t-2",
         request_id: "r-2",
       }),
     );
 
-    const res = await client.guard({ input: { prompt: "hi" } });
+    const res = await client.guard({ payload: { input: "hi" } });
 
     expect(res).toEqual({
-      isFlagged: true,
+      status: "block",
+      isBlocked: true,
       transformedPayload: { prompt: "[MASKED]" },
-      findings: [{ detectionType: "jailbreak", confidence: 0.97, ruleName: "jb-1", details: { plugin: "jailbreak" } }],
+      findings: [
+        {
+          detectionType: "jailbreak",
+          confidence: 0.97,
+          ruleName: "jb-1",
+          status: "block",
+          policyId: "p-1",
+          detectorId: "d-1",
+          action: "block",
+          details: { plugin: "jailbreak" },
+        },
+      ],
       traceId: "t-2",
       requestId: "r-2",
     });
@@ -135,7 +162,7 @@ describe("guard", () => {
       jsonResponse(403, { error: "policy not allowed for this api key", trace_id: "t-3", request_id: "r-3" }),
     );
 
-    const err = await client.guard({ input: { prompt: "hi" } }).catch((e: unknown) => e);
+    const err = await client.guard({ payload: { input: "hi" } }).catch((e: unknown) => e);
 
     expect(err).toBeInstanceOf(TrustGuardAPIError);
     const apiErr = err as TrustGuardAPIError;
@@ -148,16 +175,16 @@ describe("guard", () => {
   it("tolerates non-JSON error bodies", async () => {
     const { client } = clientWith(new Response("bad gateway", { status: 502 }));
 
-    const err = await client.guard({ input: { prompt: "hi" } }).catch((e: unknown) => e);
+    const err = await client.guard({ payload: { input: "hi" } }).catch((e: unknown) => e);
 
     expect(err).toBeInstanceOf(TrustGuardAPIError);
     expect((err as TrustGuardAPIError).status).toBe(502);
     expect((err as TrustGuardAPIError).message).toContain("bad gateway");
   });
 
-  it("rejects a request without input", async () => {
+  it("rejects a request without payload", async () => {
     const { client } = clientWith(jsonResponse(200, okBody));
 
-    await expect(client.guard({} as never)).rejects.toThrow(/input is required/);
+    await expect(client.guard({} as never)).rejects.toThrow(/payload is required/);
   });
 });

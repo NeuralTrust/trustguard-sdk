@@ -3,16 +3,22 @@
 from ._client import AsyncTrustGuard, TrustGuard
 from ._errors import TrustGuardAPIError
 from ._models import (
-    METADATA_ATTACHMENTS,
-    METADATA_CONTENT_TYPE,
+    ATTRIBUTES_CONTENT_TYPE,
+    PAYLOAD_ATTACHMENTS,
+    STATUS_BLOCK,
+    STATUS_REPORT,
+    STATUS_TRANSFORM,
     Attachment,
     Finding,
     GuardResponse,
 )
 
 __all__ = [
-    "METADATA_ATTACHMENTS",
-    "METADATA_CONTENT_TYPE",
+    "ATTRIBUTES_CONTENT_TYPE",
+    "PAYLOAD_ATTACHMENTS",
+    "STATUS_BLOCK",
+    "STATUS_REPORT",
+    "STATUS_TRANSFORM",
     "AsyncTrustGuard",
     "Attachment",
     "Finding",

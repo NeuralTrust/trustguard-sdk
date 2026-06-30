@@ -20,8 +20,11 @@ const client = new TrustGuard({
   apiKey: process.env.TRUSTGUARD_API_KEY!,
 });
 
-const response = await client.guard({ input: { prompt: "user text to evaluate" } });
-if (response.isFlagged) {
+const response = await client.guard({
+  payload: { input: "user text to evaluate" },
+  collectorKey: "your-collector-key", // omit when the API key is bound to a collector
+});
+if (response.isBlocked) {
   // block the request
 }
 ```
@@ -30,20 +33,25 @@ if (response.isFlagged) {
 
 ```typescript
 const response = await client.guard({
-  input: { prompt: "user text" },
+  payload: { input: "user text" },
   direction: "output",                // "input" (default) or "output"
+  protocol: "llm",                    // "all" (default), "llm", "mcp", or "a2a"
+  collectorKey: "your-collector-key", // addresses the collector (or gatewayId)
   sessionId: "conversation-42",       // groups multi-turn traffic
   consumerId: "user-7",               // the end user behind the request
+  attributes: { content_type: "text/plain" }, // routing hints
 });
 ```
 
+Address the collector with `collectorKey` or `gatewayId` when using a service token; omit both when the API key is already bound to a collector.
+
 ### Attachments
 
-Documents are base64-encoded into `metadata.attachments` for file-aware plugins:
+Documents are base64-encoded into `payload.attachments` for file-aware plugins (or pass a `url` for the server to fetch):
 
 ```typescript
 const response = await client.guard({
-  input: { prompt: "summarize this file" },
+  payload: { input: "summarize this file" },
   attachments: [{ filename: "doc.pdf", contentType: "application/pdf", data: pdfBytes }],
 });
 ```
@@ -52,8 +60,8 @@ const response = await client.guard({
 
 | Field | Meaning |
 |---|---|
-| `isFlagged` | The enforcement signal: block when `true` |
-| `findings` | What every plugin in the policy chain reported (`detectionType`, `confidence`, `ruleName`, `details`) |
+| `status` | Most restrictive verdict: `block`, `transform`, `report`, or `""` when clean. `isBlocked` is `true` when it is `block` |
+| `findings` | What every plugin in the policy chain reported (`detectionType`, `confidence`, `ruleName`, `status`, `policyId`, `detectorId`, `action`, `details`) |
 | `transformedPayload` | The payload as rewritten by in-flight masking, `null` when untouched |
 | `traceId` / `requestId` | Correlation ids for TrustGuard telemetry |
 
@@ -65,7 +73,7 @@ Non-2xx responses throw `TrustGuardAPIError` with `status`, `traceId` and `reque
 import { TrustGuardAPIError } from "@neuraltrust/trustguard-sdk";
 
 try {
-  await client.guard({ input: { prompt: "..." } });
+  await client.guard({ payload: { input: "..." } });
 } catch (err) {
   if (err instanceof TrustGuardAPIError && err.status === 401) {
     // bad API key

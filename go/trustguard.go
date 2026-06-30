@@ -66,8 +66,8 @@ func New(baseURL, apiKey string, opts ...Option) (*Client, error) {
 // returns the verdict. Non-2xx responses surface as *APIError; transport
 // failures as wrapped errors.
 func (c *Client) Guard(ctx context.Context, req GuardRequest) (*GuardResponse, error) {
-	if req.Input == nil {
-		return nil, errors.New("trustguard: request input is required")
+	if req.Payload == nil {
+		return nil, errors.New("trustguard: request payload is required")
 	}
 
 	body, err := json.Marshal(req)

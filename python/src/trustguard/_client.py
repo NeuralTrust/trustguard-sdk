@@ -53,28 +53,36 @@ class TrustGuard:
 
     def guard(
         self,
-        input: dict[str, Any],
+        payload: dict[str, Any],
         *,
         direction: str | None = None,
+        protocol: str | None = None,
+        collector_key: str | None = None,
+        gateway_id: str | None = None,
         session_id: str | None = None,
         consumer_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        attributes: dict[str, Any] | None = None,
         attachments: list[Attachment] | None = None,
     ) -> GuardResponse:
-        """Evaluate ``input`` against the policy attached to the API key.
+        """Evaluate ``payload`` against the collector's policy.
 
+        Address the collector with ``collector_key`` or ``gateway_id`` when using
+        a service token; omit both when the API key is bound to a collector.
         Raises :class:`TrustGuardAPIError` on non-2xx responses.
         """
-        payload = build_payload(
-            input,
+        body = build_payload(
+            payload,
             direction=direction,
+            protocol=protocol,
+            collector_key=collector_key,
+            gateway_id=gateway_id,
             session_id=session_id,
             consumer_id=consumer_id,
-            metadata=metadata,
+            attributes=attributes,
             attachments=attachments,
         )
         response = self._client.post(
-            self._base_url + _GUARD_PATH, json=payload, headers=_headers(self._api_key)
+            self._base_url + _GUARD_PATH, json=body, headers=_headers(self._api_key)
         )
         return _parse(response)
 
@@ -114,28 +122,36 @@ class AsyncTrustGuard:
 
     async def guard(
         self,
-        input: dict[str, Any],
+        payload: dict[str, Any],
         *,
         direction: str | None = None,
+        protocol: str | None = None,
+        collector_key: str | None = None,
+        gateway_id: str | None = None,
         session_id: str | None = None,
         consumer_id: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        attributes: dict[str, Any] | None = None,
         attachments: list[Attachment] | None = None,
     ) -> GuardResponse:
-        """Evaluate ``input`` against the policy attached to the API key.
+        """Evaluate ``payload`` against the collector's policy.
 
+        Address the collector with ``collector_key`` or ``gateway_id`` when using
+        a service token; omit both when the API key is bound to a collector.
         Raises :class:`TrustGuardAPIError` on non-2xx responses.
         """
-        payload = build_payload(
-            input,
+        body = build_payload(
+            payload,
             direction=direction,
+            protocol=protocol,
+            collector_key=collector_key,
+            gateway_id=gateway_id,
             session_id=session_id,
             consumer_id=consumer_id,
-            metadata=metadata,
+            attributes=attributes,
             attachments=attachments,
         )
         response = await self._client.post(
-            self._base_url + _GUARD_PATH, json=payload, headers=_headers(self._api_key)
+            self._base_url + _GUARD_PATH, json=body, headers=_headers(self._api_key)
         )
         return _parse(response)
 

@@ -68,11 +68,13 @@ func TestGuard_SendsExpectedRequest(t *testing.T) {
 	}
 
 	req := GuardRequest{
-		Input:      map[string]any{"prompt": "hello"},
-		Direction:  DirectionOutput,
-		SessionID:  "s-1",
-		ConsumerID: "u-1",
-		Metadata:   map[string]any{"channel": "web"},
+		Payload:      map[string]any{"input": "hello"},
+		Direction:    DirectionOutput,
+		Protocol:     ProtocolLLM,
+		CollectorKey: "ck-1",
+		SessionID:    "s-1",
+		ConsumerID:   "u-1",
+		Attributes:   map[string]any{"content_type": "text/plain"},
 	}
 	if _, err := c.Guard(context.Background(), req); err != nil {
 		t.Fatalf("Guard: %v", err)
@@ -88,11 +90,13 @@ func TestGuard_SendsExpectedRequest(t *testing.T) {
 		t.Errorf("content type = %q", got.ct)
 	}
 	want := map[string]any{
-		"input":       map[string]any{"prompt": "hello"},
-		"direction":   "output",
-		"session_id":  "s-1",
-		"consumer_id": "u-1",
-		"metadata":    map[string]any{"channel": "web"},
+		"payload":       map[string]any{"input": "hello"},
+		"direction":     "output",
+		"protocol":      "llm",
+		"collector_key": "ck-1",
+		"session_id":    "s-1",
+		"consumer_id":   "u-1",
+		"attributes":    map[string]any{"content_type": "text/plain"},
 	}
 	if !reflect.DeepEqual(got.payload, want) {
 		t.Errorf("payload = %#v, want %#v", got.payload, want)
@@ -111,12 +115,12 @@ func TestGuard_OmitsEmptyOptionalFields(t *testing.T) {
 	defer srv.Close()
 
 	c, _ := New(srv.URL, "key")
-	if _, err := c.Guard(context.Background(), GuardRequest{Input: map[string]any{"prompt": "hi"}}); err != nil {
+	if _, err := c.Guard(context.Background(), GuardRequest{Payload: map[string]any{"input": "hi"}}); err != nil {
 		t.Fatalf("Guard: %v", err)
 	}
 
 	// The server rejects unknown top-level fields, so empty optionals must be absent.
-	for _, field := range []string{"direction", "session_id", "consumer_id", "metadata", "protocol"} {
+	for _, field := range []string{"direction", "protocol", "collector_key", "gateway_id", "session_id", "consumer_id", "attributes"} {
 		if _, ok := payload[field]; ok {
 			t.Errorf("field %q should be omitted when empty", field)
 		}
@@ -131,14 +135,18 @@ func TestGuard_DecodesResponse(t *testing.T) {
 		want GuardResponse
 	}{
 		{
-			name: "flagged with findings",
-			body: `{"is_flagged":true,"transformed_payload":null,"findings":[{"detection_type":"jailbreak","confidence":0.97,"rule_name":"jb-1","details":{"plugin":"jailbreak"}}],"trace_id":"t-1","request_id":"r-1"}`,
+			name: "blocked with findings",
+			body: `{"status":"block","transformed_payload":null,"findings":[{"detection_type":"jailbreak","confidence":0.97,"rule_name":"jb-1","status":"block","policy_id":"p-1","detector_id":"d-1","action":"block","details":{"plugin":"jailbreak"}}],"trace_id":"t-1","request_id":"r-1"}`,
 			want: GuardResponse{
-				IsFlagged: true,
+				Status: "block",
 				Findings: []Finding{{
 					DetectionType: "jailbreak",
 					Confidence:    0.97,
 					RuleName:      "jb-1",
+					Status:        "block",
+					PolicyID:      "p-1",
+					DetectorID:    "d-1",
+					Action:        "block",
 					Details:       map[string]any{"plugin": "jailbreak"},
 				}},
 				TraceID:   "t-1",
@@ -147,8 +155,9 @@ func TestGuard_DecodesResponse(t *testing.T) {
 		},
 		{
 			name: "clean with transformed payload",
-			body: `{"is_flagged":false,"transformed_payload":{"prompt":"[MASKED]"},"findings":[],"trace_id":"t-2","request_id":"r-2"}`,
+			body: `{"status":"transform","transformed_payload":{"prompt":"[MASKED]"},"findings":[],"trace_id":"t-2","request_id":"r-2"}`,
 			want: GuardResponse{
+				Status:             "transform",
 				TransformedPayload: map[string]any{"prompt": "[MASKED]"},
 				Findings:           []Finding{},
 				TraceID:            "t-2",
@@ -166,12 +175,15 @@ func TestGuard_DecodesResponse(t *testing.T) {
 			defer srv.Close()
 
 			c, _ := New(srv.URL, "key")
-			got, err := c.Guard(context.Background(), GuardRequest{Input: map[string]any{"prompt": "hi"}})
+			got, err := c.Guard(context.Background(), GuardRequest{Payload: map[string]any{"input": "hi"}})
 			if err != nil {
 				t.Fatalf("Guard: %v", err)
 			}
 			if !reflect.DeepEqual(*got, tt.want) {
 				t.Errorf("response = %#v, want %#v", *got, tt.want)
+			}
+			if got.IsBlocked() != (tt.want.Status == StatusBlock) {
+				t.Errorf("IsBlocked() = %v for status %q", got.IsBlocked(), got.Status)
 			}
 		})
 	}
@@ -200,7 +212,7 @@ func TestGuard_APIErrors(t *testing.T) {
 			defer srv.Close()
 
 			c, _ := New(srv.URL, "key")
-			_, err := c.Guard(context.Background(), GuardRequest{Input: map[string]any{"prompt": "hi"}})
+			_, err := c.Guard(context.Background(), GuardRequest{Payload: map[string]any{"input": "hi"}})
 
 			var apiErr *APIError
 			if !errors.As(err, &apiErr) {
@@ -216,29 +228,33 @@ func TestGuard_APIErrors(t *testing.T) {
 	}
 }
 
-func TestGuard_MissingInput(t *testing.T) {
+func TestGuard_MissingPayload(t *testing.T) {
 	t.Parallel()
 	c, _ := New("https://guard.neuraltrust.ai", "key")
 	if _, err := c.Guard(context.Background(), GuardRequest{}); err == nil {
-		t.Fatal("expected error for missing input")
+		t.Fatal("expected error for missing payload")
 	}
 }
 
 func TestAddAttachment_EncodesBase64(t *testing.T) {
 	t.Parallel()
-	req := GuardRequest{Input: map[string]any{"prompt": "hi"}}
+	req := GuardRequest{Payload: map[string]any{"input": "hi"}}
 	req.AddAttachment(Attachment{Filename: "doc.pdf", ContentType: "application/pdf", Data: []byte("hello")})
-	req.AddAttachment(Attachment{Filename: "img.png", ContentType: "image/png", Data: []byte{0x89, 0x50}})
+	req.AddAttachment(Attachment{Filename: "report.txt", ContentType: "text/plain", URL: "https://example.com/report.txt"})
 
-	atts, ok := req.Metadata[MetadataAttachments].([]map[string]string)
+	atts, ok := req.Payload[PayloadAttachments].([]map[string]string)
 	if !ok {
-		t.Fatalf("metadata.attachments has wrong type: %T", req.Metadata[MetadataAttachments])
+		t.Fatalf("payload.attachments has wrong type: %T", req.Payload[PayloadAttachments])
 	}
 	if len(atts) != 2 {
 		t.Fatalf("len = %d, want 2", len(atts))
 	}
-	want := map[string]string{"filename": "doc.pdf", "content_type": "application/pdf", "data": "aGVsbG8="}
-	if !reflect.DeepEqual(atts[0], want) {
-		t.Errorf("attachment[0] = %#v, want %#v", atts[0], want)
+	wantData := map[string]string{"filename": "doc.pdf", "content_type": "application/pdf", "data": "aGVsbG8="}
+	if !reflect.DeepEqual(atts[0], wantData) {
+		t.Errorf("attachment[0] = %#v, want %#v", atts[0], wantData)
+	}
+	wantURL := map[string]string{"filename": "report.txt", "content_type": "text/plain", "url": "https://example.com/report.txt"}
+	if !reflect.DeepEqual(atts[1], wantURL) {
+		t.Errorf("attachment[1] = %#v, want %#v", atts[1], wantURL)
 	}
 }

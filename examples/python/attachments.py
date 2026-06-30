@@ -18,7 +18,7 @@ def main() -> None:
 
     with TrustGuard(os.environ["TRUSTGUARD_BASE_URL"], os.environ["TRUSTGUARD_API_KEY"]) as client:
         response = client.guard(
-            {"prompt": "Summarize the attached document."},
+            {"input": "Summarize the attached document."},
             attachments=[
                 Attachment(
                     filename=path.name,
@@ -28,7 +28,7 @@ def main() -> None:
             ],
         )
 
-    print("BLOCKED" if response.is_flagged else "allowed", f"({len(response.findings)} findings)")
+    print("BLOCKED" if response.is_blocked else "allowed", f"({len(response.findings)} findings)")
 
 
 if __name__ == "__main__":

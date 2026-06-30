@@ -8,7 +8,7 @@
 
 Official client SDKs for the [TrustGuard](https://neuraltrust.ai) runtime guard API (`POST /v1/guard`).
 
-Each SDK is a thin, typed client around a single endpoint: you configure a **base URL** and an **API key**, send the payload you want evaluated, and get back the verdict. TrustGuard detects — prompt injection, jailbreaks, PII, toxicity, and whatever else the policy attached to your API key runs — and **your code enforces**: block when `is_flagged` is true.
+Each SDK is a thin, typed client around a single endpoint: you configure a **base URL** and an **API key**, send the payload you want evaluated, and get back the verdict. TrustGuard detects — prompt injection, jailbreaks, PII, toxicity, and whatever else the collector's policy runs — and **your code enforces**: block when `status` is `block`.
 
 | Language | Package | Install | Docs |
 |---|---|---|---|
@@ -24,10 +24,10 @@ sequenceDiagram
     participant SDK as TrustGuard SDK
     participant TG as TrustGuard /v1/guard
 
-    App->>SDK: guard({ input, session_id, ... })
+    App->>SDK: guard({ payload, collector_key, ... })
     SDK->>TG: POST /v1/guard (Bearer API key)
-    TG->>TG: Run the policy's plugin chain
-    TG-->>SDK: is_flagged, findings, transformed_payload
+    TG->>TG: Run the collector's policy plugin chain
+    TG-->>SDK: status, findings, transformed_payload
     SDK-->>App: Typed GuardResponse
     App->>App: Block, allow, or forward the masked payload
 ```
@@ -40,8 +40,8 @@ sequenceDiagram
 import { TrustGuard } from "@neuraltrust/trustguard-sdk";
 
 const client = new TrustGuard({ baseUrl: "https://guard.neuraltrust.ai", apiKey: process.env.TRUSTGUARD_API_KEY! });
-const res = await client.guard({ input: { prompt: "user text" } });
-if (res.isFlagged) {
+const res = await client.guard({ payload: { input: "user text" } });
+if (res.isBlocked) {
   // block the request
 }
 ```
@@ -52,8 +52,8 @@ if (res.isFlagged) {
 from trustguard import TrustGuard
 
 with TrustGuard("https://guard.neuraltrust.ai", api_key="...") as client:
-    res = client.guard({"prompt": "user text"})
-    if res.is_flagged:
+    res = client.guard({"input": "user text"})
+    if res.is_blocked:
         ...  # block the request
 ```
 
@@ -61,8 +61,8 @@ with TrustGuard("https://guard.neuraltrust.ai", api_key="...") as client:
 
 ```go
 client, _ := trustguard.New("https://guard.neuraltrust.ai", os.Getenv("TRUSTGUARD_API_KEY"))
-res, err := client.Guard(ctx, trustguard.GuardRequest{Input: map[string]any{"prompt": "user text"}})
-if err == nil && res.IsFlagged {
+res, err := client.Guard(ctx, trustguard.GuardRequest{Payload: map[string]any{"input": "user text"}})
+if err == nil && res.IsBlocked() {
     // block the request
 }
 ```
@@ -71,16 +71,19 @@ Runnable versions of these — plus async Python, attachments, and error handlin
 
 ## What you can send
 
-Beyond `input`, every SDK supports the same optional context:
+The `payload` is the content to evaluate (e.g. `{ input: "..." }` or provider-shaped fields like `messages`/`tools`). Beyond it, every SDK supports the same optional context:
 
 | Option | Purpose |
 |---|---|
+| `collector_key` / `gateway_id` | Addresses the collector to evaluate against (with a service token; omit when the API key is bound to a collector) |
 | `direction` | `input` (default) evaluates what goes *into* the model, `output` what comes back |
+| `protocol` | `all` (default), `llm`, `mcp`, or `a2a` — scopes which rules run |
 | `session_id` | Groups multi-turn conversations for session-aware detections |
 | `consumer_id` | Identifies the end user behind the request |
-| attachments | Documents (base64-encoded on the wire) for file-aware plugins |
+| `attributes` | Routing hints, e.g. `content_type` to override the payload content type |
+| attachments | Documents (base64-encoded into `payload.attachments`, or a `url`) for file-aware plugins |
 
-And every response carries `is_flagged`, the full `findings` list, the `transformed_payload` when a masking plugin rewrote content, and `trace_id`/`request_id` for support and telemetry.
+And every response carries `status` (`block`/`transform`/`report`/empty), the full `findings` list (each with its own `status`, `policy_id`, `detector_id`, `action`), the `transformed_payload` when a masking plugin rewrote content, and `trace_id`/`request_id` for support and telemetry.
 
 ## Releasing
 

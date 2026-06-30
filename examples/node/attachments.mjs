@@ -19,7 +19,7 @@ const path = process.argv[2] ?? new URL("./basic.mjs", import.meta.url).pathname
 const data = await readFile(path);
 
 const response = await client.guard({
-  input: { prompt: "Summarize the attached document." },
+  payload: { input: "Summarize the attached document." },
   attachments: [
     {
       filename: basename(path),
@@ -29,4 +29,4 @@ const response = await client.guard({
   ],
 });
 
-console.log(response.isFlagged ? "BLOCKED" : "allowed", `(${response.findings.length} findings)`);
+console.log(response.isBlocked ? "BLOCKED" : "allowed", `(${response.findings.length} findings)`);
