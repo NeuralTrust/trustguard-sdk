@@ -16,10 +16,13 @@ All notable changes to the TrustGuard SDKs are documented here, per package. The
 
 ## Python (`neuraltrust-trustguard`)
 
+### 0.1.2 — 2026-07-24
+
+- Publish `POST /v1/evaluate` client with nested findings (`FindingSource` / `FindingSignal` / `FindingOutcome` / `evidence`) and `status` / `is_blocked` response.
+
 ### 0.1.0 — Unreleased
 
-- Initial release: `TrustGuard` (sync) and `AsyncTrustGuard` clients for `POST /v1/evaluate` with dataclass models, attachment encoding, and `TrustGuardAPIError`.
-- Nested findings (`FindingSource` / `FindingSignal` / `FindingOutcome` / `evidence`) and `status` / `is_blocked` response.
+- Initial release notes kept for Node/Go packages still unreleased under their own tags.
 
 ## Go (`github.com/NeuralTrust/trustguard-sdk/go`)
 
