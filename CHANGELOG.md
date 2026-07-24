@@ -9,10 +9,13 @@ All notable changes to the TrustGuard SDKs are documented here, per package. The
 
 ## Node (`@neuraltrust/trustguard-sdk`)
 
+### 0.1.3 — 2026-07-24
+
+- Publish `POST /v1/evaluate` client with nested findings (`source` / `signal` / `outcome` / `evidence`) and `status` / `isBlocked` response.
+
 ### 0.1.0 — Unreleased
 
-- Initial release: `TrustGuard` client for `POST /v1/evaluate` with typed request/response models, attachment encoding, and `TrustGuardAPIError`.
-- Nested findings (`source` / `signal` / `outcome` / `evidence`) and `status` / `isBlocked` response.
+- Initial release notes retained for historical context.
 
 ## Python (`trustguard-sdk`)
 
