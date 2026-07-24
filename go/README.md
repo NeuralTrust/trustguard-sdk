@@ -1,6 +1,6 @@
 # TrustGuard Go SDK
 
-Official Go client for the TrustGuard runtime guard API (`POST /v1/guard`). Configure a base URL and an API key, send the payload you want evaluated, and act on the verdict: TrustGuard detects, you enforce.
+Official Go client for the TrustGuard runtime evaluate API (`POST /v1/evaluate`). Configure a base URL and an API key, send the payload you want evaluated, and act on the verdict: TrustGuard detects, you enforce.
 
 ## Install
 
@@ -73,8 +73,8 @@ req.AddAttachment(trustguard.Attachment{
 
 | Field | Meaning |
 |---|---|
-| `Status` | Most restrictive verdict: `block`, `transform`, `report`, or empty when clean. `IsBlocked()` returns true when it is `block` |
-| `Findings` | What every plugin in the policy chain reported (`DetectionType`, `Confidence`, `RuleName`, `Status`, `PolicyID`, `DetectorID`, `Action`, `Details`) |
+| `Status` | Most restrictive verdict: `allow`, `block`, `transform`, `report`, or empty when omitted. `IsBlocked()` returns true when it is `block` |
+| `Findings` | Nested findings: `Source` / `Signal` / `Outcome` / `Evidence` (observational runs omit `Signal`/`Outcome`) |
 | `TransformedPayload` | The payload as rewritten by in-flight masking, `nil` when untouched |
 | `TraceID` / `RequestID` | Correlation ids for TrustGuard telemetry |
 

@@ -33,7 +33,10 @@ def main() -> int:
     if response.is_blocked:
         print("Request BLOCKED by policy.")
         for finding in response.findings:
-            print(f"- {finding.detection_type} (confidence {finding.confidence}, status {finding.status})")
+            signal_type = finding.signal.type if finding.signal else (finding.source.plugin or finding.source.kind)
+            confidence = finding.signal.confidence if finding.signal else None
+            action = finding.outcome.action if finding.outcome else ""
+            print(f"- {signal_type} (confidence {confidence}, action {action})")
     else:
         print("Request allowed.")
         # If a masking plugin rewrote the payload, forward the transformed version.

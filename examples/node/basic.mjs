@@ -22,7 +22,10 @@ try {
   if (response.isBlocked) {
     console.log("Request BLOCKED by policy.");
     for (const finding of response.findings) {
-      console.log(`- ${finding.detectionType} (confidence ${finding.confidence}, status ${finding.status})`);
+      const type = finding.signal?.type ?? finding.source.plugin ?? finding.source.kind;
+      const confidence = finding.signal?.confidence;
+      const action = finding.outcome?.action ?? "";
+      console.log(`- ${type} (confidence ${confidence}, action ${action})`);
     }
   } else {
     console.log("Request allowed.");

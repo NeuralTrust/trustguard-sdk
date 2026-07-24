@@ -1,4 +1,4 @@
-"""Behavioral tests for the sync and async guard clients (respx-mocked HTTP)."""
+"""Behavioral tests for the sync and async evaluate clients (respx-mocked HTTP)."""
 
 from __future__ import annotations
 
@@ -8,13 +8,22 @@ import httpx
 import pytest
 import respx
 
-from trustguard import AsyncTrustGuard, Attachment, Finding, TrustGuard, TrustGuardAPIError
+from trustguard import (
+    AsyncTrustGuard,
+    Attachment,
+    Finding,
+    FindingOutcome,
+    FindingSignal,
+    FindingSource,
+    TrustGuard,
+    TrustGuardAPIError,
+)
 
-BASE_URL = "https://guard.neuraltrust.ai"
-GUARD_URL = f"{BASE_URL}/v1/guard"
+BASE_URL = "https://trustguard.neuraltrust.ai"
+EVALUATE_URL = f"{BASE_URL}/v1/evaluate"
 
 OK_BODY = {
-    "status": "",
+    "status": "allow",
     "transformed_payload": None,
     "findings": [],
     "trace_id": "t-1",
@@ -26,14 +35,16 @@ FLAGGED_BODY = {
     "transformed_payload": {"prompt": "[MASKED]"},
     "findings": [
         {
-            "detection_type": "jailbreak",
-            "confidence": 0.97,
-            "rule_name": "jb-1",
-            "status": "block",
-            "policy_id": "p-1",
-            "detector_id": "d-1",
-            "action": "block",
-            "details": {"plugin": "jailbreak"},
+            "source": {
+                "kind": "detector",
+                "plugin": "prompt_guard",
+                "detector_id": "d-1",
+                "detector_name": "rt-prompt-guard",
+                "policy_id": "p-1",
+            },
+            "signal": {"type": "jailbreak", "confidence": 0.97},
+            "outcome": {"action": "block"},
+            "evidence": {"max_score": 0.97, "threshold": 0.85, "exceeded_threshold": True},
         }
     ],
     "trace_id": "t-2",
@@ -54,7 +65,7 @@ def test_constructor_validates_config(base_url: str, api_key: str) -> None:
 
 @respx.mock
 def test_guard_sends_expected_request() -> None:
-    route = respx.post(GUARD_URL).mock(return_value=httpx.Response(200, json=OK_BODY))
+    route = respx.post(EVALUATE_URL).mock(return_value=httpx.Response(200, json=OK_BODY))
 
     with TrustGuard(BASE_URL + "/", "secret-key") as client:
         client.guard(
@@ -81,7 +92,7 @@ def test_guard_sends_expected_request() -> None:
 
 @respx.mock
 def test_guard_omits_empty_optional_fields() -> None:
-    route = respx.post(GUARD_URL).mock(return_value=httpx.Response(200, json=OK_BODY))
+    route = respx.post(EVALUATE_URL).mock(return_value=httpx.Response(200, json=OK_BODY))
 
     with TrustGuard(BASE_URL, "key") as client:
         client.guard({"input": "hi"})
@@ -92,7 +103,7 @@ def test_guard_omits_empty_optional_fields() -> None:
 
 @respx.mock
 def test_guard_folds_attachments_into_payload() -> None:
-    route = respx.post(GUARD_URL).mock(return_value=httpx.Response(200, json=OK_BODY))
+    route = respx.post(EVALUATE_URL).mock(return_value=httpx.Response(200, json=OK_BODY))
 
     with TrustGuard(BASE_URL, "key") as client:
         client.guard(
@@ -114,7 +125,7 @@ def test_guard_folds_attachments_into_payload() -> None:
 
 @respx.mock
 def test_guard_parses_flagged_response() -> None:
-    respx.post(GUARD_URL).mock(return_value=httpx.Response(200, json=FLAGGED_BODY))
+    respx.post(EVALUATE_URL).mock(return_value=httpx.Response(200, json=FLAGGED_BODY))
 
     with TrustGuard(BASE_URL, "key") as client:
         response = client.guard({"input": "hi"})
@@ -124,14 +135,16 @@ def test_guard_parses_flagged_response() -> None:
     assert response.transformed_payload == {"prompt": "[MASKED]"}
     assert response.findings == [
         Finding(
-            detection_type="jailbreak",
-            confidence=0.97,
-            rule_name="jb-1",
-            status="block",
-            policy_id="p-1",
-            detector_id="d-1",
-            action="block",
-            details={"plugin": "jailbreak"},
+            source=FindingSource(
+                kind="detector",
+                plugin="prompt_guard",
+                detector_id="d-1",
+                detector_name="rt-prompt-guard",
+                policy_id="p-1",
+            ),
+            signal=FindingSignal(type="jailbreak", confidence=0.97),
+            outcome=FindingOutcome(action="block"),
+            evidence={"max_score": 0.97, "threshold": 0.85, "exceeded_threshold": True},
         )
     ]
     assert response.trace_id == "t-2"
@@ -152,7 +165,7 @@ def test_guard_parses_flagged_response() -> None:
     ],
 )
 def test_guard_raises_api_error(status: int, body: str, expected_message: str) -> None:
-    respx.post(GUARD_URL).mock(return_value=httpx.Response(status, text=body))
+    respx.post(EVALUATE_URL).mock(return_value=httpx.Response(status, text=body))
 
     with TrustGuard(BASE_URL, "key") as client, pytest.raises(TrustGuardAPIError) as exc_info:
         client.guard({"input": "hi"})
@@ -168,7 +181,7 @@ def test_guard_requires_payload() -> None:
 
 @respx.mock
 async def test_async_guard_round_trip() -> None:
-    route = respx.post(GUARD_URL).mock(return_value=httpx.Response(200, json=FLAGGED_BODY))
+    route = respx.post(EVALUATE_URL).mock(return_value=httpx.Response(200, json=FLAGGED_BODY))
 
     async with AsyncTrustGuard(BASE_URL, "secret-key") as client:
         response = await client.guard({"input": "hi"}, session_id="s-9")
@@ -181,7 +194,7 @@ async def test_async_guard_round_trip() -> None:
 
 @respx.mock
 async def test_async_guard_raises_api_error() -> None:
-    respx.post(GUARD_URL).mock(
+    respx.post(EVALUATE_URL).mock(
         return_value=httpx.Response(
             403,
             json={"error": "policy not allowed for this api key", "trace_id": "t-3", "request_id": "r-3"},

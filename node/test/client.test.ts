@@ -10,7 +10,7 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 const okBody = {
-  status: "",
+  status: "allow",
   transformed_payload: null,
   findings: [],
   trace_id: "t-1",
@@ -20,7 +20,7 @@ const okBody = {
 function clientWith(response: Response) {
   const fetchMock = vi.fn().mockResolvedValue(response);
   const client = new TrustGuard({
-    baseUrl: "https://guard.neuraltrust.ai",
+    baseUrl: "https://trustguard.neuraltrust.ai",
     apiKey: "secret-key",
     fetch: fetchMock as unknown as typeof fetch,
   });
@@ -33,12 +33,12 @@ describe("constructor", () => {
   });
 
   it("requires apiKey", () => {
-    expect(() => new TrustGuard({ baseUrl: "https://guard.neuraltrust.ai", apiKey: "" })).toThrow(/apiKey/);
+    expect(() => new TrustGuard({ baseUrl: "https://trustguard.neuraltrust.ai", apiKey: "" })).toThrow(/apiKey/);
   });
 });
 
 describe("guard", () => {
-  it("sends the expected request", async () => {
+  it("sends the expected request to /v1/evaluate", async () => {
     const { client, fetchMock } = clientWith(jsonResponse(200, okBody));
 
     await client.guard({
@@ -52,7 +52,7 @@ describe("guard", () => {
 
     expect(fetchMock).toHaveBeenCalledOnce();
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe("https://guard.neuraltrust.ai/v1/guard");
+    expect(url).toBe("https://trustguard.neuraltrust.ai/v1/evaluate");
     expect(init.method).toBe("POST");
     expect(init.headers).toMatchObject({
       Authorization: "Bearer secret-key",
@@ -71,14 +71,14 @@ describe("guard", () => {
   it("trims trailing slashes from the base url", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, okBody));
     const client = new TrustGuard({
-      baseUrl: "https://guard.neuraltrust.ai//",
+      baseUrl: "https://trustguard.neuraltrust.ai//",
       apiKey: "k",
       fetch: fetchMock as unknown as typeof fetch,
     });
 
     await client.guard({ payload: { input: "hi" } });
 
-    expect(fetchMock.mock.calls[0]![0]).toBe("https://guard.neuraltrust.ai/v1/guard");
+    expect(fetchMock.mock.calls[0]![0]).toBe("https://trustguard.neuraltrust.ai/v1/evaluate");
   });
 
   it("omits empty optional fields (server rejects unknown/extra top-level keys)", async () => {
@@ -110,21 +110,23 @@ describe("guard", () => {
     ]);
   });
 
-  it("deserializes a blocked response", async () => {
+  it("deserializes a blocked nested findings response", async () => {
     const { client } = clientWith(
       jsonResponse(200, {
         status: "block",
         transformed_payload: { prompt: "[MASKED]" },
         findings: [
           {
-            detection_type: "jailbreak",
-            confidence: 0.97,
-            rule_name: "jb-1",
-            status: "block",
-            policy_id: "p-1",
-            detector_id: "d-1",
-            action: "block",
-            details: { plugin: "jailbreak" },
+            source: {
+              kind: "detector",
+              plugin: "prompt_guard",
+              detector_id: "d-1",
+              detector_name: "rt-prompt-guard",
+              policy_id: "p-1",
+            },
+            signal: { type: "jailbreak", confidence: 0.97 },
+            outcome: { action: "block" },
+            evidence: { max_score: 0.97, threshold: 0.85, exceeded_threshold: true },
           },
         ],
         trace_id: "t-2",
@@ -140,14 +142,16 @@ describe("guard", () => {
       transformedPayload: { prompt: "[MASKED]" },
       findings: [
         {
-          detectionType: "jailbreak",
-          confidence: 0.97,
-          ruleName: "jb-1",
-          status: "block",
-          policyId: "p-1",
-          detectorId: "d-1",
-          action: "block",
-          details: { plugin: "jailbreak" },
+          source: {
+            kind: "detector",
+            plugin: "prompt_guard",
+            detectorId: "d-1",
+            detectorName: "rt-prompt-guard",
+            policyId: "p-1",
+          },
+          signal: { type: "jailbreak", confidence: 0.97 },
+          outcome: { action: "block" },
+          evidence: { max_score: 0.97, threshold: 0.85, exceeded_threshold: true },
         },
       ],
       traceId: "t-2",

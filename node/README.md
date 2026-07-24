@@ -1,6 +1,6 @@
 # TrustGuard Node.js SDK
 
-Official Node.js / TypeScript client for the TrustGuard runtime guard API (`POST /v1/guard`). Configure a base URL and an API key, send the payload you want evaluated, and act on the verdict: TrustGuard detects, you enforce.
+Official Node.js / TypeScript client for the TrustGuard runtime evaluate API (`POST /v1/evaluate`). Configure a base URL and an API key, send the payload you want evaluated, and act on the verdict: TrustGuard detects, you enforce.
 
 ## Install
 
@@ -54,8 +54,8 @@ const response = await client.guard({
 
 | Field | Meaning |
 |---|---|
-| `status` | Most restrictive verdict: `block`, `transform`, `report`, or `""` when clean. `isBlocked` is `true` when it is `block` |
-| `findings` | What every plugin in the policy chain reported (`detectionType`, `confidence`, `ruleName`, `status`, `policyId`, `detectorId`, `action`, `details`) |
+| `status` | Most restrictive verdict: `allow`, `block`, `transform`, `report`, or `""` when omitted. `isBlocked` is `true` when it is `block` |
+| `findings` | Nested findings: `source` / `signal` / `outcome` / `evidence` (observational runs omit `signal`/`outcome`) |
 | `transformedPayload` | The payload as rewritten by in-flight masking, `null` when untouched |
 | `traceId` / `requestId` | Correlation ids for TrustGuard telemetry |
 

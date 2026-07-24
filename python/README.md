@@ -1,6 +1,6 @@
 # TrustGuard Python SDK
 
-Official Python client for the TrustGuard runtime guard API (`POST /v1/guard`). Configure a base URL and an API key, send the payload you want evaluated, and act on the verdict: TrustGuard detects, you enforce.
+Official Python client for the TrustGuard runtime evaluate API (`POST /v1/evaluate`). Configure a base URL and an API key, send the payload you want evaluated, and act on the verdict: TrustGuard detects, you enforce.
 
 ## Install
 
@@ -71,8 +71,8 @@ response = client.guard(
 
 | Field | Meaning |
 |---|---|
-| `status` | Most restrictive verdict: `block`, `transform`, `report`, or empty when clean. `is_blocked` is `True` when it is `block` |
-| `findings` | What every plugin in the policy chain reported (`detection_type`, `confidence`, `rule_name`, `status`, `policy_id`, `detector_id`, `action`, `details`) |
+| `status` | Most restrictive verdict: `allow`, `block`, `transform`, `report`, or empty when omitted. `is_blocked` is `True` when it is `block` |
+| `findings` | Nested findings: `source` / `signal` / `outcome` / `evidence` (observational runs omit `signal`/`outcome`) |
 | `transformed_payload` | The payload as rewritten by in-flight masking, `None` when untouched |
 | `trace_id` / `request_id` | Correlation ids for TrustGuard telemetry |
 

@@ -14,7 +14,7 @@ export interface Attachment {
   url?: string;
 }
 
-/** Payload for a guard evaluation. */
+/** Payload for a guard evaluation (`POST /v1/evaluate`). */
 export interface GuardRequest {
   /** The content to evaluate, e.g. `{ input: "..." }` or provider-shaped fields. Required. */
   payload: Record<string, unknown>;
@@ -32,32 +32,50 @@ export interface GuardRequest {
   attachments?: Attachment[];
 }
 
-/** A single plugin's contribution to the guard response. */
-export interface Finding {
-  detectionType?: string;
-  confidence?: number;
-  ruleName?: string;
-  /** The action the matched rule applied: "block", "transform", or "report". */
-  status?: string;
-  policyId?: string;
+/** Who produced the finding — a detector or a gate. */
+export interface FindingSource {
+  kind: string;
+  plugin?: string;
   detectorId?: string;
-  /** The configured rule action behind this finding. */
-  action?: string;
-  details?: unknown;
+  detectorName?: string;
+  policyId?: string;
+  gateName?: string;
+}
+
+/** Detection signal when the finding fired (omitted for observational-only runs). */
+export interface FindingSignal {
+  type: string;
+  confidence?: number;
+}
+
+/** Applied execution-rule action when the finding enforced an outcome. */
+export interface FindingOutcome {
+  action: string;
 }
 
 /**
- * Verdict returned by POST /v1/guard. TrustGuard detects; the caller enforces:
+ * A single finding from the evaluate response.
+ * Observational (below-threshold) runs keep `source` + `evidence` only.
+ */
+export interface Finding {
+  source: FindingSource;
+  signal?: FindingSignal;
+  outcome?: FindingOutcome;
+  evidence?: Record<string, unknown>;
+}
+
+/**
+ * Verdict returned by POST /v1/evaluate. TrustGuard detects; the caller enforces:
  * block when `status` is "block" (`isBlocked` is the convenience signal).
  */
 export interface GuardResponse {
-  /** Most restrictive verdict: "block", "transform", "report", or "" when clean. */
+  /** Most restrictive verdict: "allow", "block", "transform", "report", or "" when omitted. */
   status: string;
   /** Convenience flag: true when `status === "block"`. */
   isBlocked: boolean;
   /** The payload as rewritten by in-flight masking, null when untouched. */
   transformedPayload: Record<string, unknown> | null;
-  /** What every plugin in the policy chain reported. */
+  /** What every plugin / gate in the policy chain reported. */
   findings: Finding[];
   /** Correlation ids for TrustGuard telemetry. */
   traceId: string;
@@ -66,7 +84,7 @@ export interface GuardResponse {
 
 /** Configuration for the TrustGuard client. */
 export interface TrustGuardOptions {
-  /** Base URL of the TrustGuard deployment, e.g. https://guard.neuraltrust.ai */
+  /** Base URL of the TrustGuard deployment, e.g. https://trustguard.neuraltrust.ai */
   baseUrl: string;
   /** Collector API key, sent as a Bearer token. */
   apiKey: string;

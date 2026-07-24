@@ -1,6 +1,6 @@
 // Package trustguard is the official Go client for the TrustGuard runtime
-// guard API (POST /v1/guard): configure a base URL and an API key, send the
-// payload to evaluate, and act on the returned verdict.
+// evaluate API (POST /v1/evaluate): configure a base URL and an API key, send
+// the payload to evaluate, and act on the returned verdict.
 package trustguard
 
 import (
@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	guardPath      = "/v1/guard"
+	evaluatePath   = "/v1/evaluate"
 	defaultTimeout = 10 * time.Second
 )
 
@@ -75,7 +75,7 @@ func (c *Client) Guard(ctx context.Context, req GuardRequest) (*GuardResponse, e
 		return nil, fmt.Errorf("trustguard: encoding request: %w", err)
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+guardPath, bytes.NewReader(body))
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+evaluatePath, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("trustguard: building request: %w", err)
 	}
@@ -84,7 +84,7 @@ func (c *Client) Guard(ctx context.Context, req GuardRequest) (*GuardResponse, e
 
 	resp, err := c.httpClient.Do(httpReq)
 	if err != nil {
-		return nil, fmt.Errorf("trustguard: calling %s: %w", guardPath, err)
+		return nil, fmt.Errorf("trustguard: calling %s: %w", evaluatePath, err)
 	}
 	defer func() { _ = resp.Body.Close() }() // nothing actionable on close failure
 

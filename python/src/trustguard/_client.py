@@ -1,4 +1,4 @@
-"""Sync and async clients for the TrustGuard runtime guard API."""
+"""Sync and async clients for the TrustGuard runtime evaluate API."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import httpx
 from ._errors import TrustGuardAPIError
 from ._models import Attachment, GuardResponse, build_payload
 
-_GUARD_PATH = "/v1/guard"
+_EVALUATE_PATH = "/v1/evaluate"
 _DEFAULT_TIMEOUT = 10.0
 
 
@@ -76,7 +76,7 @@ class TrustGuard:
             attachments=attachments,
         )
         response = self._client.post(
-            self._base_url + _GUARD_PATH, json=body, headers=_headers(self._api_key)
+            self._base_url + _EVALUATE_PATH, json=body, headers=_headers(self._api_key)
         )
         return _parse(response)
 
@@ -139,7 +139,7 @@ class AsyncTrustGuard:
             attachments=attachments,
         )
         response = await self._client.post(
-            self._base_url + _GUARD_PATH, json=body, headers=_headers(self._api_key)
+            self._base_url + _EVALUATE_PATH, json=body, headers=_headers(self._api_key)
         )
         return _parse(response)
 

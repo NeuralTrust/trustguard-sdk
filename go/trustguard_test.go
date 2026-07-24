@@ -79,8 +79,8 @@ func TestGuard_SendsExpectedRequest(t *testing.T) {
 		t.Fatalf("Guard: %v", err)
 	}
 
-	if got.path != "/v1/guard" {
-		t.Errorf("path = %q, want /v1/guard", got.path)
+	if got.path != "/v1/evaluate" {
+		t.Errorf("path = %q, want /v1/evaluate", got.path)
 	}
 	if got.auth != "Bearer secret-key" {
 		t.Errorf("auth header = %q", got.auth)
@@ -134,18 +134,20 @@ func TestGuard_DecodesResponse(t *testing.T) {
 	}{
 		{
 			name: "blocked with findings",
-			body: `{"status":"block","transformed_payload":null,"findings":[{"detection_type":"jailbreak","confidence":0.97,"rule_name":"jb-1","status":"block","policy_id":"p-1","detector_id":"d-1","action":"block","details":{"plugin":"jailbreak"}}],"trace_id":"t-1","request_id":"r-1"}`,
+			body: `{"status":"block","transformed_payload":null,"findings":[{"source":{"kind":"detector","plugin":"prompt_guard","detector_id":"d-1","detector_name":"rt-prompt-guard","policy_id":"p-1"},"signal":{"type":"jailbreak","confidence":0.97},"outcome":{"action":"block"},"evidence":{"max_score":0.97,"threshold":0.85,"exceeded_threshold":true}}],"trace_id":"t-1","request_id":"r-1"}`,
 			want: GuardResponse{
 				Status: "block",
 				Findings: []Finding{{
-					DetectionType: "jailbreak",
-					Confidence:    0.97,
-					RuleName:      "jb-1",
-					Status:        "block",
-					PolicyID:      "p-1",
-					DetectorID:    "d-1",
-					Action:        "block",
-					Details:       map[string]any{"plugin": "jailbreak"},
+					Source: FindingSource{
+						Kind:         "detector",
+						Plugin:       "prompt_guard",
+						DetectorID:   "d-1",
+						DetectorName: "rt-prompt-guard",
+						PolicyID:     "p-1",
+					},
+					Signal:   &FindingSignal{Type: "jailbreak", Confidence: 0.97},
+					Outcome:  &FindingOutcome{Action: "block"},
+					Evidence: map[string]any{"max_score": 0.97, "threshold": 0.85, "exceeded_threshold": true},
 				}},
 				TraceID:   "t-1",
 				RequestID: "r-1",

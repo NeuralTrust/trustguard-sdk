@@ -1,4 +1,4 @@
-"""Typed request/response models for the guard endpoint."""
+"""Typed request/response models for the evaluate endpoint."""
 
 from __future__ import annotations
 
@@ -11,6 +11,8 @@ ATTRIBUTES_CONTENT_TYPE = "content_type"
 #: Payload key that carries base64-encoded documents for file-aware plugins.
 PAYLOAD_ATTACHMENTS = "attachments"
 
+#: Status reported when the policy allows the payload.
+STATUS_ALLOW = "allow"
 #: Status reported when the policy blocks the payload.
 STATUS_BLOCK = "block"
 #: Status reported when a masking plugin rewrote the payload.
@@ -44,36 +46,83 @@ class Attachment:
 
 
 @dataclass
-class Finding:
-    """A single plugin's contribution to the guard response."""
+class FindingSource:
+    """Who produced the finding — a detector or a gate."""
 
-    detection_type: str | None = None
-    confidence: float | None = None
-    rule_name: str | None = None
-    status: str | None = None
-    policy_id: str | None = None
+    kind: str = ""
+    plugin: str | None = None
     detector_id: str | None = None
-    action: str | None = None
-    details: Any = None
+    detector_name: str | None = None
+    policy_id: str | None = None
+    gate_name: str | None = None
+
+    @classmethod
+    def from_wire(cls, wire: dict[str, Any] | None) -> FindingSource:
+        wire = wire or {}
+        return cls(
+            kind=wire.get("kind") or "",
+            plugin=wire.get("plugin"),
+            detector_id=wire.get("detector_id"),
+            detector_name=wire.get("detector_name"),
+            policy_id=wire.get("policy_id"),
+            gate_name=wire.get("gate_name"),
+        )
+
+
+@dataclass
+class FindingSignal:
+    """Detection signal when the finding fired."""
+
+    type: str
+    confidence: float | None = None
+
+    @classmethod
+    def from_wire(cls, wire: dict[str, Any] | None) -> FindingSignal | None:
+        if not wire or not wire.get("type"):
+            return None
+        return cls(type=wire["type"], confidence=wire.get("confidence"))
+
+
+@dataclass
+class FindingOutcome:
+    """Applied execution-rule action when the finding enforced an outcome."""
+
+    action: str
+
+    @classmethod
+    def from_wire(cls, wire: dict[str, Any] | None) -> FindingOutcome | None:
+        if not wire or not wire.get("action"):
+            return None
+        return cls(action=wire["action"])
+
+
+@dataclass
+class Finding:
+    """A single finding from the evaluate response.
+
+    Observational (below-threshold) runs keep ``source`` + ``evidence`` only.
+    """
+
+    source: FindingSource = field(default_factory=FindingSource)
+    signal: FindingSignal | None = None
+    outcome: FindingOutcome | None = None
+    evidence: dict[str, Any] | None = None
 
     @classmethod
     def from_wire(cls, wire: dict[str, Any]) -> Finding:
         """Build a Finding from the raw response item."""
+        evidence = wire.get("evidence")
         return cls(
-            detection_type=wire.get("detection_type"),
-            confidence=wire.get("confidence"),
-            rule_name=wire.get("rule_name"),
-            status=wire.get("status"),
-            policy_id=wire.get("policy_id"),
-            detector_id=wire.get("detector_id"),
-            action=wire.get("action"),
-            details=wire.get("details"),
+            source=FindingSource.from_wire(wire.get("source")),
+            signal=FindingSignal.from_wire(wire.get("signal")),
+            outcome=FindingOutcome.from_wire(wire.get("outcome")),
+            evidence=evidence if isinstance(evidence, dict) else None,
         )
 
 
 @dataclass
 class GuardResponse:
-    """Verdict returned by POST /v1/guard.
+    """Verdict returned by POST /v1/evaluate.
 
     TrustGuard detects; the caller enforces: block when :attr:`is_blocked` is true.
     """
