@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "neuraltrust-trustguard"
-version = "0.1.0"
+version = "0.1.2"
 description = "Official Python SDK for the TrustGuard runtime evaluate API (POST /v1/evaluate)"
 readme = "README.md"
 license = "MIT"
