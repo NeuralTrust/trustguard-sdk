@@ -7,7 +7,7 @@ Only the latest released version of each SDK receives security fixes.
 | Package | Supported |
 |---|---|
 | `@neuraltrust/trustguard-sdk` (npm) | latest release |
-| `neuraltrust-trustguard` (PyPI) | latest release |
+| `trustguard-sdk` (PyPI) | latest release |
 | `github.com/NeuralTrust/trustguard-sdk/go` | latest `go/vX.Y.Z` tag |
 
 ## Reporting a vulnerability

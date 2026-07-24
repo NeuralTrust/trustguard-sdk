@@ -9,7 +9,7 @@ body:
       multiple: true
       options:
         - Node.js (@neuraltrust/trustguard-sdk)
-        - Python (neuraltrust-trustguard)
+        - Python (trustguard-sdk)
         - Go (github.com/NeuralTrust/trustguard-sdk/go)
         - All / repo-wide
     validations:
