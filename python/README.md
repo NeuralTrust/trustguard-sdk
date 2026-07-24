@@ -5,7 +5,7 @@ Official Python client for the TrustGuard runtime evaluate API (`POST /v1/evalua
 ## Install
 
 ```bash
-pip install neuraltrust-trustguard
+pip install trustguard-sdk
 ```
 
 Requires Python 3.9+. The only dependency is `httpx`.

@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/NeuralTrust/trustguard-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/NeuralTrust/trustguard-sdk/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/%40neuraltrust%2Ftrustguard-sdk)](https://www.npmjs.com/package/@neuraltrust/trustguard-sdk)
-[![PyPI](https://img.shields.io/pypi/v/neuraltrust-trustguard)](https://pypi.org/project/neuraltrust-trustguard/)
+[![PyPI](https://img.shields.io/pypi/v/trustguard-sdk)](https://pypi.org/project/trustguard-sdk/)
 [![Go Reference](https://pkg.go.dev/badge/github.com/NeuralTrust/trustguard-sdk/go.svg)](https://pkg.go.dev/github.com/NeuralTrust/trustguard-sdk/go)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -13,7 +13,7 @@ Each SDK is a thin, typed client around a single endpoint: you configure a **bas
 | Language | Package | Install | Docs |
 |---|---|---|---|
 | Node.js / TypeScript | `@neuraltrust/trustguard-sdk` | `npm install @neuraltrust/trustguard-sdk` | [`node/`](node/) |
-| Python (sync + async) | `neuraltrust-trustguard` | `pip install neuraltrust-trustguard` | [`python/`](python/) |
+| Python (sync + async) | `trustguard-sdk` | `pip install trustguard-sdk` | [`python/`](python/) |
 | Go | `github.com/NeuralTrust/trustguard-sdk/go` | `go get github.com/NeuralTrust/trustguard-sdk/go` | [`go/`](go/) |
 
 ## How it works

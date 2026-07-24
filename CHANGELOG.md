@@ -14,7 +14,11 @@ All notable changes to the TrustGuard SDKs are documented here, per package. The
 - Initial release: `TrustGuard` client for `POST /v1/evaluate` with typed request/response models, attachment encoding, and `TrustGuardAPIError`.
 - Nested findings (`source` / `signal` / `outcome` / `evidence`) and `status` / `isBlocked` response.
 
-## Python (`neuraltrust-trustguard`)
+## Python (`trustguard-sdk`)
+
+### 0.1.3 — Unreleased
+
+- Rename PyPI distribution from `neuraltrust-trustguard` to `trustguard-sdk` (import path remains `trustguard`).
 
 ### 0.1.2 — 2026-07-24
 
