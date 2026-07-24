@@ -59,7 +59,16 @@ func main() {
 	if resp.IsBlocked() {
 		fmt.Println("Request BLOCKED by policy.")
 		for _, finding := range resp.Findings {
-			fmt.Printf("- %s (confidence %.2f, status %s)\n", finding.DetectionType, finding.Confidence, finding.Status)
+			signalType := finding.Source.Plugin
+			if signalType == "" {
+				signalType = finding.Source.Kind
+			}
+			var confidence float64
+			if finding.Signal != nil {
+				signalType = finding.Signal.Type
+				confidence = finding.Signal.Confidence
+			}
+			fmt.Printf("- %s (confidence %.2f, action %s)\n", signalType, confidence, finding.AppliedAction())
 		}
 	} else {
 		fmt.Println("Request allowed.")

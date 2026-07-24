@@ -22,8 +22,9 @@ const (
 	ProtocolA2A Protocol = "a2a"
 )
 
-// Status values reported in GuardResponse.Status and on each Finding.Status.
+// Status values reported in GuardResponse.Status and FindingOutcome.Action.
 const (
+	StatusAllow     = "allow"
 	StatusBlock     = "block"
 	StatusTransform = "transform"
 	StatusReport    = "report"
@@ -37,7 +38,7 @@ const (
 	PayloadAttachments = "attachments"
 )
 
-// GuardRequest is the payload sent to POST /v1/guard.
+// GuardRequest is the payload sent to POST /v1/evaluate.
 type GuardRequest struct {
 	// Payload is the content to evaluate: {"input": "..."} or provider-shaped
 	// fields such as messages/tools. Attachments live under Payload["attachments"]
@@ -86,31 +87,54 @@ func (r *GuardRequest) AddAttachment(a Attachment) {
 	r.Payload[PayloadAttachments] = append(existing, entry)
 }
 
-// Finding is a single plugin's contribution to the guard response.
-type Finding struct {
-	DetectionType string  `json:"detection_type,omitempty"`
-	Confidence    float64 `json:"confidence,omitempty"`
-	RuleName      string  `json:"rule_name,omitempty"`
-	// Status mirrors the action the matched rule applied: block, transform, or report.
-	Status string `json:"status,omitempty"`
-	// PolicyID and DetectorID attribute the finding to the policy and detector that produced it.
-	PolicyID   string `json:"policy_id,omitempty"`
-	DetectorID string `json:"detector_id,omitempty"`
-	// Action is the configured rule action behind this finding.
-	Action  string `json:"action,omitempty"`
-	Details any    `json:"details,omitempty"`
+// FindingSource identifies who produced the finding — a detector or a gate.
+type FindingSource struct {
+	Kind         string `json:"kind"`
+	Plugin       string `json:"plugin,omitempty"`
+	DetectorID   string `json:"detector_id,omitempty"`
+	DetectorName string `json:"detector_name,omitempty"`
+	PolicyID     string `json:"policy_id,omitempty"`
+	GateName     string `json:"gate_name,omitempty"`
 }
 
-// GuardResponse is the verdict returned by POST /v1/guard. TrustGuard detects;
+// FindingSignal is the detection signal when the finding fired.
+type FindingSignal struct {
+	Type       string  `json:"type"`
+	Confidence float64 `json:"confidence,omitempty"`
+}
+
+// FindingOutcome is the applied execution-rule action.
+type FindingOutcome struct {
+	Action string `json:"action"`
+}
+
+// Finding is a single finding from the evaluate response.
+// Observational (below-threshold) runs keep Source + Evidence only.
+type Finding struct {
+	Source   FindingSource    `json:"source"`
+	Signal   *FindingSignal   `json:"signal,omitempty"`
+	Outcome  *FindingOutcome  `json:"outcome,omitempty"`
+	Evidence map[string]any   `json:"evidence,omitempty"`
+}
+
+// AppliedAction returns the outcome action, or "" when observational.
+func (f Finding) AppliedAction() string {
+	if f.Outcome == nil {
+		return ""
+	}
+	return f.Outcome.Action
+}
+
+// GuardResponse is the verdict returned by POST /v1/evaluate. TrustGuard detects;
 // the caller enforces: block when Status is "block".
 type GuardResponse struct {
 	// Status is the most restrictive verdict across the findings and any
-	// short-circuiting gate: "block", "transform", "report", or empty when
-	// nothing matched.
+	// short-circuiting gate: "allow", "block", "transform", "report", or empty
+	// when omitted.
 	Status string `json:"status"`
 	// TransformedPayload is the payload as rewritten by in-flight masking, nil when untouched.
 	TransformedPayload map[string]any `json:"transformed_payload"`
-	// Findings lists what every plugin in the policy chain reported.
+	// Findings lists what every plugin / gate in the policy chain reported.
 	Findings []Finding `json:"findings"`
 	// TraceID and RequestID correlate the call with TrustGuard telemetry.
 	TraceID   string `json:"trace_id"`

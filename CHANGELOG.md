@@ -2,28 +2,28 @@
 
 All notable changes to the TrustGuard SDKs are documented here, per package. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and each package versions independently (see [Releasing](README.md#releasing)).
 
-> **Unreleased — wire contract update.** The `POST /v1/guard` request and response shapes changed and the SDKs were updated to match (pre-1.0, so no deprecation cycle):
-> - Request: `input` → `payload`; `metadata` → `attributes` (where `content_type` lives); attachments now fold into `payload.attachments` (was `metadata.attachments`); new `protocol` field. The server rejects unknown top-level keys, so the old `input`/`metadata` keys no longer work.
-> - Response: `is_flagged` (bool) → `status` (string: `block`/`transform`/`report`/empty), with a convenience `isBlocked` / `is_blocked` / `IsBlocked()`; findings gained `status`, `policy_id`, `detector_id`, and `action`.
-> - Attachments accept a `url` as an alternative to inline `data`.
+> **Unreleased — evaluate endpoint + nested findings.** Pre-1.0; no deprecation cycle.
+> - Endpoint: `POST /v1/guard` → `POST /v1/evaluate` (legacy `/v1/guard` is gone on current TrustGuard).
+> - Findings: flat `detection_type` / `policy_id` / `details` → nested `source` / `signal` / `outcome` / `evidence` (matches TrustGuard findings contract).
+> - Response `status` includes `allow` in addition to `block` / `transform` / `report`.
 
 ## Node (`@neuraltrust/trustguard-sdk`)
 
 ### 0.1.0 — Unreleased
 
-- Initial release: `TrustGuard` client for `POST /v1/guard` with typed request/response models, attachment encoding, and `TrustGuardAPIError`.
-- Aligned with the updated guard contract: `payload`/`attributes`/`protocol` request fields, `payload.attachments` (with optional `url`), and a `status`/`isBlocked` response with enriched findings.
+- Initial release: `TrustGuard` client for `POST /v1/evaluate` with typed request/response models, attachment encoding, and `TrustGuardAPIError`.
+- Nested findings (`source` / `signal` / `outcome` / `evidence`) and `status` / `isBlocked` response.
 
 ## Python (`neuraltrust-trustguard`)
 
 ### 0.1.0 — Unreleased
 
-- Initial release: `TrustGuard` (sync) and `AsyncTrustGuard` clients for `POST /v1/guard` with dataclass models, attachment encoding, and `TrustGuardAPIError`.
-- Aligned with the updated guard contract: `payload`/`attributes`/`protocol` arguments, `payload.attachments` (with optional `url`), and a `status`/`is_blocked` response with enriched findings.
+- Initial release: `TrustGuard` (sync) and `AsyncTrustGuard` clients for `POST /v1/evaluate` with dataclass models, attachment encoding, and `TrustGuardAPIError`.
+- Nested findings (`FindingSource` / `FindingSignal` / `FindingOutcome` / `evidence`) and `status` / `is_blocked` response.
 
 ## Go (`github.com/NeuralTrust/trustguard-sdk/go`)
 
 ### go/v0.1.0 — Unreleased
 
-- Initial release: `trustguard.Client` for `POST /v1/guard` with typed request/response models, attachment encoding, and `*APIError`.
-- Aligned with the updated guard contract: `Payload`/`Attributes`/`Protocol` request fields, `payload.attachments` (with optional `URL`), and a `Status`/`IsBlocked()` response with enriched findings.
+- Initial release: `trustguard.Client` for `POST /v1/evaluate` with typed request/response models, attachment encoding, and `*APIError`.
+- Nested findings (`FindingSource` / `FindingSignal` / `FindingOutcome` / `Evidence`) and `Status` / `IsBlocked()` response.

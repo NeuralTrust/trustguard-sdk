@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in improving the TrustGuard SDKs. This repo hosts three independent packages — Node.js (`node/`), Python (`python/`), and Go (`go/`) — that share one API contract: `POST /v1/guard`.
+Thanks for your interest in improving the TrustGuard SDKs. This repo hosts three independent packages — Node.js (`node/`), Python (`python/`), and Go (`go/`) — that share one API contract: `POST /v1/evaluate`.
 
 ## Ground rules
 
@@ -55,7 +55,7 @@ Go 1.22+. The module is stdlib-only — please keep it dependency-free.
 
 ## API contract changes
 
-The wire format is defined by the TrustGuard server (`POST /v1/guard`). If the server contract changes:
+The wire format is defined by the TrustGuard server (`POST /v1/evaluate`). If the server contract changes:
 
 1. Update the models in all three packages (`go/types.go`, `node/src/types.ts`, `python/src/trustguard/_models.py`).
 2. Mirror the change in each client's serialization tests.

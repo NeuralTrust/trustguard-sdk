@@ -6,7 +6,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/NeuralTrust/trustguard-sdk/go.svg)](https://pkg.go.dev/github.com/NeuralTrust/trustguard-sdk/go)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Official client SDKs for the [TrustGuard](https://neuraltrust.ai) runtime guard API (`POST /v1/guard`).
+Official client SDKs for the [TrustGuard](https://neuraltrust.ai) runtime evaluate API (`POST /v1/evaluate`).
 
 Each SDK is a thin, typed client around a single endpoint: you configure a **base URL** and an **API key**, send the payload you want evaluated, and get back the verdict. TrustGuard detects — prompt injection, jailbreaks, PII, toxicity, and whatever else the collector's policy runs — and **your code enforces**: block when `status` is `block`.
 
@@ -22,10 +22,10 @@ Each SDK is a thin, typed client around a single endpoint: you configure a **bas
 sequenceDiagram
     participant App as Your application
     participant SDK as TrustGuard SDK
-    participant TG as TrustGuard /v1/guard
+    participant TG as TrustGuard /v1/evaluate
 
     App->>SDK: guard({ payload, session_id, ... })
-    SDK->>TG: POST /v1/guard (Bearer API key)
+    SDK->>TG: POST /v1/evaluate (Bearer API key)
     TG->>TG: Run the collector's policy plugin chain
     TG-->>SDK: status, findings, transformed_payload
     SDK-->>App: Typed GuardResponse
