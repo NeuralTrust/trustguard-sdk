@@ -23,6 +23,11 @@ jobs:
           cache: npm
           cache-dependency-path: node/package-lock.json
       - run: npm ci
+      # Trusted publishing requires npm >= 11.5.1; Node 22 bundles npm 10.x.
+      # Placed after `npm ci` so the install keeps using the bundled npm that
+      # already resolves this lockfile.
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install -g npm@^11
       - name: Check tag matches package.json version
         run: |
           tag_version="${GITHUB_REF_NAME#node-v}"
@@ -32,6 +37,7 @@ jobs:
             exit 1
           fi
       # prepublishOnly runs lint, tests and the build before publishing.
+      # Authenticated by the npm trusted publisher (OIDC) configured for this
+      # package against this repository and workflow. No token is used, so
+      # there is nothing to fall back to if the trust relationship breaks.
       - run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
