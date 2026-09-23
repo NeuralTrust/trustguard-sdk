@@ -1,5 +1,8 @@
 # TrustGuard Node.js SDK
 
+[![npm](https://img.shields.io/npm/v/%40neuraltrust%2Ftrustguard-sdk)](https://www.npmjs.com/package/@neuraltrust/trustguard-sdk)
+[Documentation](https://docs.neuraltrust.ai/sdks/trustguard/node) · [Python package](https://pypi.org/project/trustguard-sdk/) · [Go module](https://pkg.go.dev/github.com/NeuralTrust/trustguard-sdk/go) · [GitHub](https://github.com/NeuralTrust/trustguard-sdk)
+
 Official Node.js / TypeScript client for the TrustGuard runtime evaluate API (`POST /v1/evaluate`). Configure a base URL and an API key, send the payload you want evaluated, and act on the verdict: TrustGuard detects, you enforce.
 
 ## Install
@@ -74,6 +77,17 @@ try {
   }
 }
 ```
+
+## Documentation
+
+The full guide is at [docs.neuraltrust.ai](https://docs.neuraltrust.ai/sdks/trustguard/node): setting up the collector
+and its key, guarding input and output, configuration, the attributes
+an evaluation carries, and troubleshooting. The [Evaluate API](https://docs.neuraltrust.ai/trustguard/api/evaluate)
+is the contract every SDK wraps, and [SDKs](https://docs.neuraltrust.ai/sdks/overview) says when to reach
+for TrustGuard and when for TrustGate.
+
+The same client in other languages: [Python](https://pypi.org/project/trustguard-sdk/), [Go](https://pkg.go.dev/github.com/NeuralTrust/trustguard-sdk/go). Source, examples and issues:
+[github.com/NeuralTrust/trustguard-sdk](https://github.com/NeuralTrust/trustguard-sdk).
 
 ## Development
 

@@ -9,6 +9,10 @@
     "url": "git+https://github.com/NeuralTrust/trustguard-sdk.git",
     "directory": "node"
   },
+  "homepage": "https://docs.neuraltrust.ai/sdks/trustguard/node",
+  "bugs": {
+    "url": "https://github.com/NeuralTrust/trustguard-sdk/issues"
+  },
   "keywords": [
     "neuraltrust",
     "trustguard",

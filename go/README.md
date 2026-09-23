@@ -1,5 +1,8 @@
 # TrustGuard Go SDK
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/NeuralTrust/trustguard-sdk/go.svg)](https://pkg.go.dev/github.com/NeuralTrust/trustguard-sdk/go)
+[Evaluate API](https://docs.neuraltrust.ai/trustguard/api/evaluate) · [SDKs](https://docs.neuraltrust.ai/sdks/overview) · [Node.js package](https://www.npmjs.com/package/@neuraltrust/trustguard-sdk) · [Python package](https://pypi.org/project/trustguard-sdk/)
+
 Official Go client for the TrustGuard runtime evaluate API (`POST /v1/evaluate`). Configure a base URL and an API key, send the payload you want evaluated, and act on the verdict: TrustGuard detects, you enforce.
 
 ## Install
