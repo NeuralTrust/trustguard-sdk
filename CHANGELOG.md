@@ -11,6 +11,10 @@ All notable changes to the TrustGuard SDKs are documented here, per package. The
 
 ### Unreleased
 
+- Add `examples/ai-sdk`, a Next.js chat agent guarded end to end, with signed tool approvals and a live verdict panel.
+
+### 0.1.5 — 2026-09-23
+
 - Add `@neuraltrust/trustguard-sdk/ai-sdk`, which guards a Vercel AI SDK agent: a language model middleware for the prompt and the response, a `toolApproval` function for tool calls, and a tool set wrapper for tool results. `ai` 7 is an optional peer dependency; the main entry point does not load it.
 - Encode attachments without `Buffer`, so the client runs on edge runtimes.
 

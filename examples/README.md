@@ -10,6 +10,7 @@ export TRUSTGUARD_API_KEY="your-collector-api-key"
 | Directory | What it shows |
 |---|---|
 | [`node/`](node/) | Basic guard call and attachment scanning with the npm package |
+| [`ai-sdk/`](ai-sdk/) | A Next.js chat agent guarded end to end through `@neuraltrust/trustguard-sdk/ai-sdk`, with tool approvals and a live verdict panel |
 | [`python/`](python/) | Sync, async, and attachment usage with the PyPI package |
 | [`go/`](go/) | Basic guard call, error handling, and attachments in one program |
 
@@ -25,6 +26,17 @@ npm install
 node basic.mjs
 node attachments.mjs
 ```
+
+### Vercel AI SDK
+
+```bash
+cd examples/ai-sdk
+npm install && npm run sdk
+cp .env.example .env.local   # add an OpenAI key and a TOOL_APPROVAL_SECRET
+npm run dev
+```
+
+See [`ai-sdk/README.md`](ai-sdk/README.md) for the policy that shows every path.
 
 ### Python
 

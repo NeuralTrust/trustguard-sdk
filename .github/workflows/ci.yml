@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       node: ${{ steps.filter.outputs.node }}
+      ai-sdk-example: ${{ steps.filter.outputs.ai-sdk-example }}
       python: ${{ steps.filter.outputs.python }}
       go: ${{ steps.filter.outputs.go }}
     steps:
@@ -24,6 +25,10 @@ jobs:
           filters: |
             node:
               - 'node/**'
+              - '.github/workflows/ci.yml'
+            ai-sdk-example:
+              - 'node/**'
+              - 'examples/ai-sdk/**'
               - '.github/workflows/ci.yml'
             python:
               - 'python/**'
@@ -49,6 +54,30 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - run: npm run build
+
+  # Builds the Next.js example against the SDK in this checkout, so an SDK change that breaks it fails here.
+  ai-sdk-example:
+    needs: changes
+    if: needs.changes.outputs.ai-sdk-example == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/ai-sdk
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            node/package-lock.json
+            examples/ai-sdk/package-lock.json
+      - run: npm ci
+      - run: npm run sdk
+      - run: npm run typecheck
       - run: npm run build
 
   python:
