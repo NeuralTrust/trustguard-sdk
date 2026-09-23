@@ -1,6 +1,6 @@
 {
   "name": "@neuraltrust/trustguard-sdk",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Official Node.js SDK for the TrustGuard runtime evaluate API (POST /v1/evaluate)",
   "license": "MIT",
   "author": "NeuralTrust",
