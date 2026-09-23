@@ -57,10 +57,10 @@ With `TRUSTGUARD_STREAM=monitor`, the answer streams as it is generated and is e
 
 ## Deploy to Vercel
 
-The `file:` dependency on `../../node` only works inside this repository. In your own project, install the published package instead and drop `next.config.ts`:
+The `file:` dependency on `../../node` only works inside this repository. In your own project, install the published package instead, version 0.1.5 or later, and drop `next.config.ts`:
 
 ```bash
-npm install @neuraltrust/trustguard-sdk ai @ai-sdk/react @ai-sdk/openai zod
+npm install @neuraltrust/trustguard-sdk@^0.1.5 ai @ai-sdk/react @ai-sdk/openai zod
 ```
 
 Then set the variables above in the project's **Environment Variables**. The route runs on the Node.js runtime and needs no other configuration.
