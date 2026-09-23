@@ -88,7 +88,7 @@ import { openai } from "@ai-sdk/openai";
 import { TrustGuard } from "@neuraltrust/trustguard-sdk";
 import { trustguard } from "@neuraltrust/trustguard-sdk/ai-sdk";
 
-const client = new TrustGuard({ baseUrl: process.env.TRUSTGUARD_URL!, apiKey: process.env.TRUSTGUARD_API_KEY! });
+const client = new TrustGuard({ baseUrl: process.env.TRUSTGUARD_BASE_URL!, apiKey: process.env.TRUSTGUARD_API_KEY! });
 
 // One instance per request, so every evaluation carries the user and the conversation.
 const tg = trustguard(client, { consumerId: user.id, sessionId: chatId });
@@ -97,6 +97,7 @@ const result = streamText({
   model: wrapLanguageModel({ model: openai("gpt-5.2"), middleware: tg.middleware }),
   tools: tg.tools(tools),
   toolApproval: tg.toolApproval,
+  experimental_toolApprovalSecret: process.env.TOOL_APPROVAL_SECRET, // signs approval requests
   messages,
 });
 ```
@@ -110,11 +111,15 @@ const result = streamText({
 
 Steps that continue a tool loop are not evaluated as prompts again: the tool results in them are covered by `tools()`. Wrap MCP tools the same way: `tg.tools(await mcpClient.tools())`.
 
+A complete Next.js app, with approvals and a live verdict panel, is in [`examples/ai-sdk`](../examples/ai-sdk).
+
 **Streaming.** By default a streamed response is monitored: text streams untouched and is evaluated when the response finishes, so findings reach **Activity** but nothing is enforced. `stream: "buffer"` holds each text block until it ends, evaluates it, then releases it, masked or replaced. That enforces the policy and gives up streaming.
 
 **Failures.** With the default `failMode: "closed"`, an evaluation error throws on the prompt and the response, and denies the tool call. `failMode: "open"` lets the traffic through. `onError` sees every error either way, and `onVerdict` every verdict.
 
 **Not evaluated.** The system prompt, which your code writes. Files in the user turn, such as images and PDFs: only their text parts are sent. Reasoning parts of the response, which pass through unchanged.
+
+**Approvals.** The answer to an approval request comes back in the message history the browser sends. Set the AI SDK's `experimental_toolApprovalSecret` so it signs each request and a client cannot forge an approval. When the answer arrives, the AI SDK calls `toolApproval` again: a call the policy now blocks stays denied even after the user allowed it.
 
 **Composing approvals.** `toolApproval` returns `undefined` when TrustGuard lets a call through, so your own rules can follow it:
 

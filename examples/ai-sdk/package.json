@@ -1,0 +1,28 @@
+{
+  "name": "trustguard-ai-sdk-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sdk": "npm --prefix ../../node ci && npm --prefix ../../node run build",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^4.0.73",
+    "@ai-sdk/react": "^4.0.115",
+    "@neuraltrust/trustguard-sdk": "file:../../node",
+    "ai": "^7.0.112",
+    "next": "^16.3.6",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^5.7.2"
+  }
+}
