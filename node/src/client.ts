@@ -116,12 +116,20 @@ function serializeAttachment(attachment: Attachment): Record<string, string> {
     content_type: attachment.contentType,
   };
   if (attachment.data !== undefined) {
-    const bytes =
-      typeof attachment.data === "string" ? Buffer.from(attachment.data, "utf-8") : Buffer.from(attachment.data);
-    entry.data = bytes.toString("base64");
+    const bytes = typeof attachment.data === "string" ? new TextEncoder().encode(attachment.data) : attachment.data;
+    entry.data = toBase64(bytes);
   }
   if (attachment.url !== undefined) entry.url = attachment.url;
   return entry;
+}
+
+/** Base64 without Buffer, so the client also runs on edge runtimes. Chunked to stay under the argument limit of fromCharCode. */
+function toBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(binary);
 }
 
 function deserializeResponse(wire: WireResponse): GuardResponse {
