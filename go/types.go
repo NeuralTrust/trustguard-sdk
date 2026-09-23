@@ -111,10 +111,10 @@ type FindingOutcome struct {
 // Finding is a single finding from the evaluate response.
 // Observational (below-threshold) runs keep Source + Evidence only.
 type Finding struct {
-	Source   FindingSource    `json:"source"`
-	Signal   *FindingSignal   `json:"signal,omitempty"`
-	Outcome  *FindingOutcome  `json:"outcome,omitempty"`
-	Evidence map[string]any   `json:"evidence,omitempty"`
+	Source   FindingSource   `json:"source"`
+	Signal   *FindingSignal  `json:"signal,omitempty"`
+	Outcome  *FindingOutcome `json:"outcome,omitempty"`
+	Evidence map[string]any  `json:"evidence,omitempty"`
 }
 
 // AppliedAction returns the outcome action, or "" when observational.
