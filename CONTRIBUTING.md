@@ -63,12 +63,20 @@ The wire format is defined by the TrustGuard server (`POST /v1/evaluate`). If th
 
 ## Releasing (maintainers)
 
-Each package versions and releases independently:
+Each package versions and releases independently. `scripts/release.sh` writes
+the manifest (and lockfile) for Node or Python, or just tags Go:
 
-| Package | Steps |
-|---|---|
-| Node | Bump `node/package.json` version, then tag `node-vX.Y.Z` |
-| Python | Bump `python/pyproject.toml` version, then tag `python-vX.Y.Z` |
-| Go | Tag `go/vX.Y.Z` (no manifest to bump) |
+```bash
+scripts/release.sh all 0.1.4 --tag --push  # node + python + go, one commit, three tags
+scripts/release.sh node 0.1.4              # bump node/package.json only
+scripts/release.sh python tag --push       # tag whatever is already in pyproject
+scripts/release.sh go 0.1.0 --tag --push   # tag go/v0.1.0
+```
 
-Pushing the tag triggers the publish workflow (npm / PyPI); Go consumers fetch directly from git. Update `CHANGELOG.md` in the same PR as the version bump.
+Update `CHANGELOG.md` in the same change as a bump. Then push the tag:
+
+| Package | Tag | Effect |
+|---|---|---|
+| Node | `node-vX.Y.Z` | **Publish Node SDK** → npm |
+| Python | `python-vX.Y.Z` | **Publish Python SDK** → PyPI |
+| Go | `go/vX.Y.Z` | nothing to upload; consumers fetch the module from git |

@@ -86,13 +86,19 @@ And every response carries `status` (`block`/`transform`/`report`/empty), the fu
 
 ## Releasing
 
-Releases are tag-driven, one tag namespace per language; each package versions independently:
+Releases are tag-driven, one tag namespace per language; each package versions independently. `scripts/release.sh` is the bump-and-tag step; pushing the tag is what publishes.
 
 | Language | Tag | Effect |
 |---|---|---|
-| Node | `node-vX.Y.Z` | CI publishes to npm (requires `NPM_TOKEN` secret) |
+| Node | `node-vX.Y.Z` | CI publishes to npm (trusted publishing) |
 | Python | `python-vX.Y.Z` | CI builds and publishes to PyPI (trusted publishing) |
 | Go | `go/vX.Y.Z` | Nothing to publish — Go consumers fetch the module from git; the `go/` prefix is the standard convention for a module living in the `go/` subdirectory |
+
+```bash
+scripts/release.sh all 0.1.4 --tag --push   # all three
+scripts/release.sh node 0.1.4               # one language
+scripts/release.sh go 0.1.0 --tag --push
+```
 
 Bump the version in the package manifest (`node/package.json` / `python/pyproject.toml`) before tagging, and update [`CHANGELOG.md`](CHANGELOG.md). Go has no manifest version; the tag is the version.
 
