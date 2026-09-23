@@ -18,7 +18,9 @@
     "trustguard",
     "guardrails",
     "llm-security",
-    "ai-firewall"
+    "ai-firewall",
+    "vercel",
+    "ai-sdk"
   ],
   "type": "module",
   "main": "./dist/index.cjs",
@@ -29,6 +31,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./ai-sdk": {
+      "types": "./dist/ai-sdk/index.d.ts",
+      "import": "./dist/ai-sdk/index.js",
+      "require": "./dist/ai-sdk/index.cjs"
     }
   },
   "files": [
@@ -44,10 +51,25 @@
     "test": "vitest run",
     "prepublishOnly": "npm run lint && npm run test && npm run build"
   },
+  "peerDependencies": {
+    "@ai-sdk/provider": "^4.0.0",
+    "ai": "^7.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@ai-sdk/provider": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@ai-sdk/provider": "^4.0.18",
     "@types/node": "^22.10.2",
+    "ai": "^7.0.112",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.9",
+    "zod": "^4.6.5"
   }
 }

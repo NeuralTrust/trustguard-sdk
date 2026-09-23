@@ -9,6 +9,11 @@ All notable changes to the TrustGuard SDKs are documented here, per package. The
 
 ## Node (`@neuraltrust/trustguard-sdk`)
 
+### Unreleased
+
+- Add `@neuraltrust/trustguard-sdk/ai-sdk`, which guards a Vercel AI SDK agent: a language model middleware for the prompt and the response, a `toolApproval` function for tool calls, and a tool set wrapper for tool results. `ai` 7 is an optional peer dependency; the main entry point does not load it.
+- Encode attachments without `Buffer`, so the client runs on edge runtimes.
+
 ### 0.1.3 — 2026-07-24
 
 - Publish `POST /v1/evaluate` client with nested findings (`source` / `signal` / `outcome` / `evidence`) and `status` / `isBlocked` response.

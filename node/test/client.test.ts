@@ -110,6 +110,24 @@ describe("guard", () => {
     ]);
   });
 
+  it("base64-encodes large multi-byte attachments like Buffer does", async () => {
+    const { client, fetchMock } = clientWith(jsonResponse(200, okBody));
+    const text = "ñandú 🦤 ".repeat(20_000);
+    const bytes = new Uint8Array(100_000).map((_, i) => i % 256);
+
+    await client.guard({
+      payload: { input: "hi" },
+      attachments: [
+        { filename: "big.txt", contentType: "text/plain", data: text },
+        { filename: "big.bin", contentType: "application/octet-stream", data: bytes },
+      ],
+    });
+
+    const body = JSON.parse(fetchMock.mock.calls[0]![1].body);
+    expect(body.payload.attachments[0].data).toBe(Buffer.from(text, "utf-8").toString("base64"));
+    expect(body.payload.attachments[1].data).toBe(Buffer.from(bytes).toString("base64"));
+  });
+
   it("deserializes a blocked nested findings response", async () => {
     const { client } = clientWith(
       jsonResponse(200, {
