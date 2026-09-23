@@ -1,5 +1,8 @@
 # TrustGuard Python SDK
 
+[![PyPI](https://img.shields.io/pypi/v/trustguard-sdk)](https://pypi.org/project/trustguard-sdk/)
+[Documentation](https://docs.neuraltrust.ai/sdks/trustguard/python) · [Node.js package](https://www.npmjs.com/package/@neuraltrust/trustguard-sdk) · [Go module](https://pkg.go.dev/github.com/NeuralTrust/trustguard-sdk/go) · [GitHub](https://github.com/NeuralTrust/trustguard-sdk)
+
 Official Python client for the TrustGuard runtime evaluate API (`POST /v1/evaluate`). Configure a base URL and an API key, send the payload you want evaluated, and act on the verdict: TrustGuard detects, you enforce.
 
 ## Install
@@ -79,6 +82,17 @@ response = client.guard(
 ### Errors
 
 Non-2xx responses raise `TrustGuardAPIError` with `status_code`, `message`, `trace_id` and `request_id`. Transport failures (timeouts, connection errors) raise the underlying `httpx` exceptions. The default timeout is 10 seconds (`timeout=` to change it); pass `http_client=` to supply your own configured `httpx.Client` / `httpx.AsyncClient`.
+
+## Documentation
+
+The full guide is at [docs.neuraltrust.ai](https://docs.neuraltrust.ai/sdks/trustguard/python): setting up the collector
+and its key, guarding input and output, configuration, the attributes
+an evaluation carries, and troubleshooting. The [Evaluate API](https://docs.neuraltrust.ai/trustguard/api/evaluate)
+is the contract every SDK wraps, and [SDKs](https://docs.neuraltrust.ai/sdks/overview) says when to reach
+for TrustGuard and when for TrustGate.
+
+The same client in other languages: [Node.js](https://www.npmjs.com/package/@neuraltrust/trustguard-sdk), [Go](https://pkg.go.dev/github.com/NeuralTrust/trustguard-sdk/go). Source, examples and issues:
+[github.com/NeuralTrust/trustguard-sdk](https://github.com/NeuralTrust/trustguard-sdk).
 
 ## Development
 

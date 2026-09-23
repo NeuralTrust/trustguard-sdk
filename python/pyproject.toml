@@ -22,7 +22,9 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/NeuralTrust/trustguard-sdk"
+Documentation = "https://docs.neuraltrust.ai/sdks/trustguard/python"
 Repository = "https://github.com/NeuralTrust/trustguard-sdk"
+Issues = "https://github.com/NeuralTrust/trustguard-sdk/issues"
 
 [project.optional-dependencies]
 dev = [

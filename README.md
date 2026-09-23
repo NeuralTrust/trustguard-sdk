@@ -10,11 +10,11 @@ Official client SDKs for the [TrustGuard](https://neuraltrust.ai) runtime evalua
 
 Each SDK is a thin, typed client around a single endpoint: you configure a **base URL** and an **API key**, send the payload you want evaluated, and get back the verdict. TrustGuard detects — prompt injection, jailbreaks, PII, toxicity, and whatever else the collector's policy runs — and **your code enforces**: block when `status` is `block`.
 
-| Language | Package | Install | Docs |
+| Language | Package | Install | Guide |
 |---|---|---|---|
-| Node.js / TypeScript | `@neuraltrust/trustguard-sdk` | `npm install @neuraltrust/trustguard-sdk` | [`node/`](node/) |
-| Python (sync + async) | `trustguard-sdk` | `pip install trustguard-sdk` | [`python/`](python/) |
-| Go | `github.com/NeuralTrust/trustguard-sdk/go` | `go get github.com/NeuralTrust/trustguard-sdk/go` | [`go/`](go/) |
+| Node.js / TypeScript | [`@neuraltrust/trustguard-sdk`](https://www.npmjs.com/package/@neuraltrust/trustguard-sdk) | `npm install @neuraltrust/trustguard-sdk` | [Docs](https://docs.neuraltrust.ai/sdks/trustguard/node) · [`node/`](node/) |
+| Python (sync + async) | [`trustguard-sdk`](https://pypi.org/project/trustguard-sdk/) | `pip install trustguard-sdk` | [Docs](https://docs.neuraltrust.ai/sdks/trustguard/python) · [`python/`](python/) |
+| Go | [`github.com/NeuralTrust/trustguard-sdk/go`](https://pkg.go.dev/github.com/NeuralTrust/trustguard-sdk/go) | `go get github.com/NeuralTrust/trustguard-sdk/go` | [`go/`](go/) |
 
 ## How it works
 
