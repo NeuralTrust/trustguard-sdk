@@ -78,6 +78,50 @@ try {
 }
 ```
 
+## Vercel AI SDK
+
+`@neuraltrust/trustguard-sdk/ai-sdk` guards an [AI SDK](https://ai-sdk.dev) agent end to end: the prompt, the response, every tool call and every tool result. It needs `ai` 7 or later, which stays an optional peer dependency: the main entry point never loads it.
+
+```typescript
+import { streamText, wrapLanguageModel } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { TrustGuard } from "@neuraltrust/trustguard-sdk";
+import { trustguard } from "@neuraltrust/trustguard-sdk/ai-sdk";
+
+const client = new TrustGuard({ baseUrl: process.env.TRUSTGUARD_URL!, apiKey: process.env.TRUSTGUARD_API_KEY! });
+
+// One instance per request, so every evaluation carries the user and the conversation.
+const tg = trustguard(client, { consumerId: user.id, sessionId: chatId });
+
+const result = streamText({
+  model: wrapLanguageModel({ model: openai("gpt-5.2"), middleware: tg.middleware }),
+  tools: tg.tools(tools),
+  toolApproval: tg.toolApproval,
+  messages,
+});
+```
+
+| Piece | Guards | Block | Transform | Ask |
+|---|---|---|---|---|
+| `middleware` | The user turn, before the model call | Throws `TrustGuardBlockedError` | Sends the masked text | Blocks, or passes with `promptAsk: "allow"` |
+| `middleware` | The response | Replaces it with `blockedMessage` | Replaces it with the masked text | Not evaluated on output |
+| `toolApproval` | Each tool call, before it runs | Denied, with the policy as the reason | Denied: approval cannot rewrite the arguments | `user-approval`, or denied with `toolAsk: "deny"` |
+| `tools()` | Each tool result, before the model reads it | The tool fails with `TrustGuardBlockedError`, which the model sees as a tool error | Returns the masked result | Not evaluated on output |
+
+Steps that continue a tool loop are not evaluated as prompts again: the tool results in them are covered by `tools()`. Wrap MCP tools the same way: `tg.tools(await mcpClient.tools())`.
+
+**Streaming.** By default a streamed response is monitored: text streams untouched and is evaluated when the response finishes, so findings reach **Activity** but nothing is enforced. `stream: "buffer"` holds each text block until it ends, evaluates it, then releases it, masked or replaced. That enforces the policy and gives up streaming.
+
+**Failures.** With the default `failMode: "closed"`, an evaluation error throws on the prompt and the response, and denies the tool call. `failMode: "open"` lets the traffic through. `onError` sees every error either way, and `onVerdict` every verdict.
+
+**Not evaluated.** The system prompt, which your code writes. Files in the user turn, such as images and PDFs: only their text parts are sent. Reasoning parts of the response, which pass through unchanged.
+
+**Composing approvals.** `toolApproval` returns `undefined` when TrustGuard lets a call through, so your own rules can follow it:
+
+```typescript
+toolApproval: async (options) => (await tg.toolApproval(options)) ?? myApproval(options),
+```
+
 ## Documentation
 
 The full guide is at [docs.neuraltrust.ai](https://docs.neuraltrust.ai/sdks/trustguard/node): setting up the collector

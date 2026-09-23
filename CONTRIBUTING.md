@@ -5,6 +5,7 @@ Thanks for your interest in improving the TrustGuard SDKs. This repo hosts three
 ## Ground rules
 
 - **Keep the SDKs thin.** They are typed HTTP clients for a single endpoint. Features like retries, caching, or enforcement logic belong in the caller, not here.
+  The one exception is a framework integration, which exists to enforce verdicts inside that framework. It ships as its own entry point (for example `@neuraltrust/trustguard-sdk/ai-sdk`), takes the framework as an optional peer dependency, and is never imported by the main entry point.
 - **Keep the three SDKs consistent.** A contract change (new field, new error shape) should land in all three packages in the same PR whenever possible.
 - **Every code path needs tests.** All three packages mock the HTTP layer — no network access in tests.
 - **Conventional commits**: `type(scope): subject`, e.g. `feat(python): add attachment helper` or `fix(go): tolerate non-JSON error bodies`. Scopes: `node`, `python`, `go`, `ci`, `docs`.
