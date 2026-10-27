@@ -33,7 +33,8 @@ if (response.isBlocked) {
 
 ```typescript
 const response = await client.guard({
-  payload: { input: "user text" },
+  // A model response goes in an assistant message; `{ input }` is read as the user's text.
+  payload: { messages: [{ role: "assistant", content: "model response" }] },
   direction: "output",                // "input" (default) or "output"
   protocol: "llm",                    // "all" (default), "llm", "mcp", or "a2a"
   sessionId: "conversation-42",       // groups multi-turn traffic

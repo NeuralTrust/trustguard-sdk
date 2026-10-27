@@ -205,7 +205,7 @@ class Guard {
     }
     if (status !== "transform") return params;
 
-    const masked = transformedText(response);
+    const masked = transformedText(response, sentInput);
     if (masked === undefined) {
       throw new TrustGuardBlockedError(
         "input",
@@ -231,7 +231,7 @@ class Guard {
     let response: GuardResponse;
     try {
       response = await this.#evaluate("output", {
-        payload: { input: text },
+        payload: assistantTurn(text),
         direction: "output",
         protocol: "llm",
         attributes: modelAttributes(model),
@@ -241,7 +241,7 @@ class Guard {
       throw error;
     }
     if (response.status === "block") return this.#blockedMessage();
-    if (response.status === "transform") return transformedText(response) ?? this.#blockedMessage();
+    if (response.status === "transform") return transformedText(response, sentAssistant) ?? this.#blockedMessage();
     return undefined;
   }
 
@@ -251,7 +251,7 @@ class Guard {
       if (!text.trim()) return;
       try {
         await this.#evaluate("output", {
-          payload: { input: text },
+          payload: assistantTurn(text),
           direction: "output",
           protocol: "llm",
           attributes: modelAttributes(model),
@@ -325,7 +325,7 @@ class Guard {
     let response: GuardResponse;
     try {
       response = await this.#evaluate("tool-result", {
-        payload: { input: text },
+        payload: toolsResult(text),
         direction: "output",
         protocol: "mcp",
         attributes: { tool: { name: toolName } },
@@ -344,7 +344,7 @@ class Guard {
     }
     if (response.status !== "transform") return output;
 
-    const masked = transformedText(response);
+    const masked = transformedText(response, sentToolResult);
     if (masked === undefined) {
       throw new TrustGuardBlockedError(
         "tool-result",
@@ -430,9 +430,36 @@ function replaceText<T extends TextLike>(parts: readonly T[], text: string): T[]
   return out;
 }
 
-function transformedText(response: GuardResponse): string | undefined {
-  const input = response.transformedPayload?.input;
-  return typeof input === "string" ? input : undefined;
+type Payload = Record<string, unknown>;
+
+/** The masked text of a transform verdict. TrustGuard returns the payload it was sent, rewritten, so `at` reads it from where it was sent. */
+function transformedText(response: GuardResponse, at: (payload: Payload) => unknown): string | undefined {
+  const payload = response.transformedPayload;
+  const text = payload ? at(payload) : undefined;
+  return typeof text === "string" ? text : undefined;
+}
+
+const sentInput = (payload: Payload): unknown => payload.input;
+const sentAssistant = (payload: Payload): unknown => firstItem(payload.messages)?.content;
+const sentToolResult = (payload: Payload): unknown => firstItem(asRecord(payload.result)?.content)?.text;
+
+function firstItem(value: unknown): Payload | undefined {
+  return Array.isArray(value) ? asRecord(value[0]) : undefined;
+}
+
+function asRecord(value: unknown): Payload | undefined {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? (value as Payload) : undefined;
+}
+
+// TrustGuard reads `{ input }` as the user's message, so on output Toxicity Detection and Custom Moderation would skip the
+// response. It is sent as the assistant turn it is.
+function assistantTurn(text: string): Payload {
+  return { messages: [{ role: "assistant", content: text }] };
+}
+
+// An MCP payload must be a JSON-RPC envelope, so a tool result is sent as the result of the call that produced it.
+function toolsResult(text: string): Payload {
+  return { jsonrpc: "2.0", id: 1, result: { content: [{ type: "text", text }] } };
 }
 
 function toolsCall(name: string, input: unknown): Record<string, unknown> {
