@@ -9,7 +9,7 @@ All notable changes to the TrustGuard SDKs are documented here, per package. The
 
 ## Node (`@neuraltrust/trustguard-sdk`)
 
-### Unreleased
+### 0.1.6 — 2026-10-28
 
 - Add `examples/ai-sdk`, a Next.js chat agent guarded end to end, with signed tool approvals and a live verdict panel.
 - Fix `@neuraltrust/trustguard-sdk/ai-sdk` output evaluations. The response is sent as an assistant message, so Toxicity Detection and Custom Moderation inspect it instead of skipping it. Tool results are sent as an MCP JSON-RPC result, which TrustGuard accepts instead of rejecting with `400`. Masked text is read back from the same shape.
