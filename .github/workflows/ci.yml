@@ -83,7 +83,8 @@ jobs:
   python:
     needs: changes
     if: needs.changes.outputs.python == 'true'
-    runs-on: ubuntu-latest
+    # Pinned: setup-python has no 3.9 build for ubuntu-latest (26.04), and the package still supports >=3.9.
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: python
