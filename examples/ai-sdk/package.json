@@ -14,7 +14,7 @@
     "@ai-sdk/react": "^4.0.115",
     "@neuraltrust/trustguard-sdk": "file:../../node",
     "ai": "^7.0.112",
-    "next": "^16.3.6",
+    "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "zod": "^4.6.5"
