@@ -48,7 +48,10 @@ func main() {
 
 ```go
 resp, err := client.Guard(ctx, trustguard.GuardRequest{
-	Payload:    map[string]any{"input": "user text"},
+	// A model response goes in an assistant message; "input" is read as the user's text.
+	Payload: map[string]any{"messages": []any{
+		map[string]any{"role": "assistant", "content": "model response"},
+	}},
 	Direction:  trustguard.DirectionOutput, // input (default) or output
 	Protocol:   trustguard.ProtocolLLM,     // all (default), llm, mcp, or a2a
 	SessionID:  "conversation-42",          // groups multi-turn traffic

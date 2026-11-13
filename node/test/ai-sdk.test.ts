@@ -22,6 +22,10 @@ function mockTrustGuard(decide: (body: Body) => Wire | Error = () => ({ status: 
   const fetchMock = vi.fn(async (_url: string, init: RequestInit) => {
     const body = JSON.parse(String(init.body)) as Body;
     bodies.push(body);
+    // TrustGuard rejects an MCP payload that is not a JSON-RPC envelope.
+    if (body.protocol === "mcp" && body.payload.jsonrpc !== "2.0") {
+      return new Response(JSON.stringify({ error: "payload: mcp requires a JSON-RPC envelope" }), { status: 400 });
+    }
     const verdict = decide(body);
     if (verdict instanceof Error) return new Response(JSON.stringify({ error: verdict.message }), { status: 500 });
     return new Response(JSON.stringify({ findings: [], trace_id: "t", request_id: "r", ...verdict }), { status: 200 });
@@ -66,6 +70,10 @@ const blockedBy = (name: string, action = "block") => [
 ];
 
 const options: TrustGuardAISDKOptions = { consumerId: "user_123", sessionId: "chat_1" };
+
+/** The payload shapes the SDK sends on output; TrustGuard returns a transform in the same shape. */
+const assistantTurn = (text: string) => ({ messages: [{ role: "assistant", content: text }] });
+const toolsResult = (text: string) => ({ jsonrpc: "2.0", id: 1, result: { content: [{ type: "text", text }] } });
 
 describe("prompt", () => {
   it("evaluates the user turn as LLM input with the consumer, session and model", async () => {
@@ -221,7 +229,7 @@ describe("response", () => {
     const mask = trustguard(
       mockTrustGuard((b) =>
         b.direction === "output"
-          ? { status: "transform", transformed_payload: { input: "Card [MASKED]" } }
+          ? { status: "transform", transformed_payload: assistantTurn("Card [MASKED]") }
           : { status: "allow" },
       ).client,
       options,
@@ -247,8 +255,25 @@ describe("response", () => {
       prompt: "x",
     });
 
-    expect(bodies[1]).toMatchObject({ payload: { input: "Hi there" }, direction: "output", protocol: "llm" });
+    expect(bodies[1]).toMatchObject({ direction: "output", protocol: "llm" });
+    expect(bodies[1]!.payload).toEqual(assistantTurn("Hi there"));
     expect(onVerdict.mock.calls.map(([e]) => e.phase)).toEqual(["input", "output"]);
+  });
+
+  it("blocks a transform verdict that carries no masked assistant text", async () => {
+    const { client } = mockTrustGuard((b) =>
+      b.direction === "output"
+        ? { status: "transform", transformed_payload: { input: "Card [MASKED]" } }
+        : { status: "allow" },
+    );
+    const result = await generateText({
+      model: wrapLanguageModel({
+        model: new MockLanguageModelV4({ doGenerate: textResult("Card 4111 1111 1111 1111") }),
+        middleware: trustguard(client, options).middleware,
+      }),
+      prompt: "x",
+    });
+    expect(result.text).toBe("This response was blocked by policy.");
   });
 });
 
@@ -263,7 +288,7 @@ describe("stream", () => {
     });
 
     expect(await result.text).toBe("Hello");
-    expect(bodies.find((b) => b.direction === "output")?.payload).toEqual({ input: "Hello" });
+    expect(bodies.find((b) => b.direction === "output")?.payload).toEqual(assistantTurn("Hello"));
   });
 
   it("never fails a monitored stream when TrustGuard is down", async () => {
@@ -295,7 +320,7 @@ describe("stream", () => {
 
     expect(await run({ status: "allow" })).toBe("Card 4111 1111 1111 1111");
     expect(await run({ status: "block" })).toBe("This response was blocked by policy.");
-    expect(await run({ status: "transform", transformed_payload: { input: "Card [MASKED]" } })).toBe("Card [MASKED]");
+    expect(await run({ status: "transform", transformed_payload: assistantTurn("Card [MASKED]") })).toBe("Card [MASKED]");
   });
 });
 
@@ -388,11 +413,11 @@ describe("tools", () => {
 
     expect(await tools.search.execute!({ q: "x" }, exec)).toEqual({ hits: 2 });
     expect(bodies[0]).toMatchObject({
-      payload: { input: '{"hits":2}' },
       direction: "output",
       protocol: "mcp",
       attributes: { tool: { name: "search" } },
     });
+    expect(bodies[0]!.payload).toEqual(toolsResult('{"hits":2}'));
   });
 
   it("withholds a blocked result and masks a transformed one", async () => {
@@ -405,7 +430,7 @@ describe("tools", () => {
     );
 
     const masked = trustguard(
-      mockTrustGuard(() => ({ status: "transform", transformed_payload: { input: '{"email":"[MASKED]"}' } })).client,
+      mockTrustGuard(() => ({ status: "transform", transformed_payload: toolsResult('{"email":"[MASKED]"}') })).client,
       options,
     ).tools({
       lookup: tool({ inputSchema: schema, execute: async () => ({ email: "alex@acme.com" }) }),
@@ -415,9 +440,17 @@ describe("tools", () => {
     expect(await masked.note.execute!({ q: "x" }, exec)).toBe('{"email":"[MASKED]"}');
   });
 
+  it("withholds a transformed result that carries no masked result text", async () => {
+    const tools = trustguard(
+      mockTrustGuard(() => ({ status: "transform", transformed_payload: { input: "[MASKED]" } })).client,
+      options,
+    ).tools({ note: tool({ inputSchema: schema, execute: async () => "alex@acme.com" }) });
+    await expect(tools.note.execute!({ q: "x" }, exec)).rejects.toThrow(TrustGuardBlockedError);
+  });
+
   it("guards the final value of a streaming tool", async () => {
     const tools = trustguard(
-      mockTrustGuard(() => ({ status: "transform", transformed_payload: { input: "done [MASKED]" } })).client,
+      mockTrustGuard(() => ({ status: "transform", transformed_payload: toolsResult("done [MASKED]") })).client,
       options,
     ).tools({
       job: tool({

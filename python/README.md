@@ -48,7 +48,8 @@ async with AsyncTrustGuard("https://guard.neuraltrust.ai", api_key="YOUR_API_KEY
 
 ```python
 response = client.guard(
-    {"input": "user text"},
+    # A model response goes in an assistant message; {"input": ...} is read as the user's text.
+    {"messages": [{"role": "assistant", "content": "model response"}]},
     direction="output",            # "input" (default) or "output"
     protocol="llm",                # "all" (default), "llm", "mcp", or "a2a"
     session_id="conversation-42",  # groups multi-turn traffic
